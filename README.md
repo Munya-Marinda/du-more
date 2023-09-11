@@ -46,9 +46,6 @@ Before running the React Native To-Do List App, ensure you have the following:
 We welcome contributions from the community! If you'd like to enhance the React Native To-Do List App or fix issues, please check out our [Contribution Guidelines](CONTRIBUTING.md) for more information. 🙌
 
 ## License 📜
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details. 🔓
-
-## Contact Us 📧
-Have questions or suggestions? Feel free to reach out to our team at [todo.app@example.com](mailto:todo.app@example.com). 📬
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details. 🔓 
 
 Stay organized and boost your productivity with the React Native To-Do List App! 🚀📝
