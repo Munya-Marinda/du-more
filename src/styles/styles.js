@@ -10,16 +10,19 @@ export const globalStyles = StyleSheet.create({
     paddingTop: 40,
     display: "flex",
     paddingBottom: 20,
-    alignItems: "center",
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "black",
   },
   homePage_top_header_1: {
     fontSize: 30,
+    color: "white",
     fontWeight: "bold",
   },
   homePage_items_scrollView_1: {
     width: windowWidth,
+    backgroundColor: "black",
   },
   //
   //
@@ -74,6 +77,7 @@ export const globalStyles = StyleSheet.create({
     backgroundColor: "white",
     alignItems: "flex-start",
     justifyContent: "flex-start",
+    backgroundColor: "gray",
   },
   item_flag_1: {
     width: 20,
@@ -105,6 +109,7 @@ export const globalStyles = StyleSheet.create({
   },
   item_title_text_1: {
     fontSize: 18,
+    color: "white",
     fontWeight: "bold",
   },
   item_note_text_1_parent: {
@@ -112,6 +117,7 @@ export const globalStyles = StyleSheet.create({
   },
   item_note_text_1: {
     fontSize: 12,
+    color: "white",
   },
   item_date_text_1_parent: {
     bottom: 10,
@@ -120,8 +126,14 @@ export const globalStyles = StyleSheet.create({
   },
   item_date_text_1: {
     fontSize: 12,
+    color: "white",
   },
-
+  item_indicator: {
+    marginRight: 5,
+    height: 20,
+    width: 20,
+    borderRadius: 50,
+  },
   //
   //
   //
