@@ -141,6 +141,157 @@ export const globalStyles = StyleSheet.create({
   //
   //
   //
+  // ADD ITEM MODAL
+  modal_parent_1: {
+    paddingBottom: 100,
+    width: windowWidth,
+    height: windowHeight,
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modal_input_group_1: {
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "center",
+    width: windowWidth / 1.5,
+  },
+  modal_text_input: {
+    margin: 10,
+    padding: 10,
+    borderWidth: 1,
+    color: "white",
+    borderRadius: 5,
+    borderColor: "white",
+    width: windowWidth / 1.5,
+  },
+  modal_multitext_input: {
+    color: "white",
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: "white",
+    padding: 10,
+    margin: 10,
+    width: windowWidth / 1.5,
+  },
+  modal_button_group_1: {
+    marginTop: 50,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    width: windowWidth / 3,
+    justifyContent: "center",
+  },
+  modal_button_1: {
+    margin: 10,
+    padding: 10,
+    color: "white",
+    borderWidth: 1,
+    borderRadius: 5,
+    textAlign: "center",
+    borderColor: "white",
+  },
+  modal_button_2: {
+    marginRight: 15,
+    padding: 10,
+    color: "white",
+    borderBottomWidth: 2,
+    textAlign: "center",
+    borderBottomColor: "white",
+  },
+  modal_color_date_group_1: {
+    marginTop: 10,
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
+    width: windowWidth / 1.5,
+    justifyContent: "space-between",
+  },
+  modal_color_option_group_1: {
+    padding: 2,
+    display: "flex",
+    flexDirection: "row",
+    borderColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modal_color_option_group_2: {
+    borderBottomWidth: 2,
+    borderBottomColor: "white",
+    width: windowWidth / 1.2,
+  },
+  modal_color_option_1: {
+    width: 30,
+    margin: 2,
+    height: 30,
+  },
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  // TAB DROPDOWN
+  tab_dropdown_parent: {
+    display: "flex",
+    paddingBottom: 20,
+    width: windowWidth,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 30,
+    backgroundColor: "black",
+    justifyContent: "space-between",
+  },
+  tab_dropdown_container: {
+    width: 150,
+    padding: 0,
+    borderWidth: 1,
+    borderRadius: 10,
+    position: "relative",
+    paddingHorizontal: 8,
+    borderColor: "transparent",
+    backgroundColor: "black",
+  },
+  tab_dropdown_icon: {
+    marginRight: 5,
+  },
+  tab_dropdown_label: {
+    top: -10,
+    left: 8,
+    zIndex: 999,
+    fontSize: 10,
+    color: "white",
+    textAlign: "center",
+    position: "absolute",
+    paddingHorizontal: 8,
+    backgroundColor: "black",
+  },
+  tab_dropdown_placeholderStyle: {
+    fontSize: 50,
+  },
+  tab_dropdown_selectedTextStyle: {
+    fontSize: 14,
+    color: "white",
+  },
+  tab_dropdown_iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  tab_dropdown_inputSearchStyle: {
+    height: 40,
+    fontSize: 14,
+  },
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   // MALICIOUS
   row_apart: {
     width: _cardWidth * 0.9,

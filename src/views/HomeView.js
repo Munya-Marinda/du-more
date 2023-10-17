@@ -1,4 +1,13 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Modal,
+  TextInput,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { StatusBar } from "expo-status-bar";
 import { globalStyles } from "../styles/styles";
@@ -7,6 +16,7 @@ import { TabCompleted } from "../components/TabCompleted";
 import { TabTrash } from "../components/TabTrash";
 import { TabPending } from "../components/TabPending";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Dropdown } from "react-native-element-dropdown";
 
 export const HomePage = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -14,8 +24,43 @@ export const HomePage = () => {
   const [pending, setPending] = useState([]);
   const [trash, setTrash] = useState([]);
   const [message, setMessage] = useState("null");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [value, setValue] = useState(1);
+  const [isFocus, setIsFocus] = useState(false);
   //
-  //
+  const [singleItemData, setSingleItemData] = useState({
+    flag: "green",
+    status: "pending",
+    title: "",
+    note: "",
+    date: new Date(),
+    date_created: new Date(),
+  });
+
+  const data = [
+    { label: "PENDING", value: 0 },
+    { label: "COMPLETED", value: 1 },
+    { label: "TRASH", value: 2 },
+  ];
+
+  const colorOptions = [
+    "green",
+    "blue",
+    "red",
+    "yellow",
+    "orange",
+    "purple",
+    "pink",
+    "black",
+    "white",
+    "gray",
+    "cyan",
+    "magenta",
+    "teal",
+    "maroon",
+  ];
+
   //
   //
   //
@@ -53,6 +98,21 @@ export const HomePage = () => {
   useEffect(() => {
     getToDoItems();
   }, []);
+
+  function formatDate(date) {
+    const options = { day: "numeric", month: "short", year: "numeric" };
+    return date.toLocaleDateString(undefined, options);
+  }
+
+  function generateUniqueID() {
+    const now = new Date();
+    const year = now.getFullYear(); // Get the current year (e.g., 2023)
+    const month = now.getMonth() + 1; // Get the current month (0-11, so add 1 to get 1-12)
+    const day = now.getDate(); // Get the current day of the month (1-31)
+    const timestamp = now.getTime(); // Get the current timestamp
+
+    return `id-${year}-${month}-${day}-${timestamp}`;
+  }
 
   const getToDoItems = async () => {
     const keys = ["completedItems", "pendingItems", "trashedItems"];
@@ -102,6 +162,26 @@ export const HomePage = () => {
     } catch (e) {
       console.log(e);
     }
+  };
+
+  const addToDoItems = async () => {
+    try {
+      const value = await AsyncStorage.getItem("pendingItems");
+      if (value !== null) {
+        const pendingItems = JSON.parse(value);
+        const newItem = singleItemData;
+        newItem.id = generateUniqueID();
+        pendingItems.push(newItem);
+        console.log("pendingItems", pendingItems);
+        await AsyncStorage.setItem(
+          "pendingItems",
+          JSON.stringify(pendingItems)
+        );
+        setModalVisible(false);
+        set;
+        getToDoItems();
+      }
+    } catch (e) {}
   };
 
   const dev_addToDoItems = async () => {
@@ -333,9 +413,162 @@ export const HomePage = () => {
   //
   //
   //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   return (
     <View>
       <StatusBar hidden={false} />
+
+      {/* MODAL */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={globalStyles.modal_parent_1}>
+          {/* INPUTS */}
+          <View style={globalStyles.modal_input_group_1}>
+            <TextInput
+              style={globalStyles.modal_text_input}
+              onChangeText={(value) => {
+                setSingleItemData({
+                  ...singleItemData,
+                  title: value,
+                });
+              }}
+              value={singleItemData.title}
+              placeholder="Title"
+              placeholderTextColor={"silver"}
+            />
+
+            <TextInput
+              style={globalStyles.modal_multitext_input}
+              onChangeText={(value) => {
+                setSingleItemData({
+                  ...singleItemData,
+                  note: value,
+                });
+              }}
+              value={singleItemData.note}
+              placeholder={"Add A Note\n...\n...\n...\n"}
+              placeholderTextColor={"silver"}
+              multiline={true}
+            />
+
+            <View style={globalStyles.modal_color_date_group_1}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDatePicker(true);
+                }}
+              >
+                <Text style={globalStyles.modal_button_2}>
+                  {formatDate(singleItemData.date)}
+                </Text>
+              </TouchableOpacity>
+
+              {showDatePicker && (
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  value={singleItemData.date}
+                  minimumDate={new Date()}
+                  mode="date"
+                  is24Hour={true}
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    const currentDate = selectedDate || singleItemData.date;
+                    setSingleItemData({
+                      ...singleItemData,
+                      date: currentDate,
+                    });
+                    setShowDatePicker(false);
+                  }}
+                />
+              )}
+
+              <ScrollView
+                horizontal={true}
+                style={globalStyles.modal_color_option_group_2}
+              >
+                <View style={globalStyles.modal_color_option_group_1}>
+                  {colorOptions.map((option, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      onPress={() => {
+                        setSingleItemData({
+                          ...singleItemData,
+                          flag: option,
+                        });
+                      }}
+                    >
+                      <View
+                        style={[
+                          globalStyles.modal_color_option_1,
+                          {
+                            backgroundColor: option,
+                          },
+                          singleItemData.flag !== option
+                            ? {}
+                            : {
+                                borderWidth: 1,
+                                borderColor: "white",
+                              },
+                        ]}
+                      ></View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+          {/* CANCEL AND SAVE BUTTON */}
+          <View style={globalStyles.modal_button_group_1}>
+            <TouchableOpacity
+              onPress={() => {
+                setModalVisible(false);
+              }}
+            >
+              <Text style={globalStyles.modal_button_1}>CANCEL</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                addToDoItems();
+              }}
+            >
+              <Text style={globalStyles.modal_button_1}>SAVE</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {/* TOPBAR */}
       <View style={globalStyles.homePage_top_parent_1}>
         <Text
           onLongPress={() => {
@@ -348,17 +581,70 @@ export const HomePage = () => {
         >
           DU-MORE
         </Text>
-
-        <View style={{ transform: "translateX(50px)" }}>
-          <Ionicons name="add-circle" size={30} color="white" />
+      </View>
+      {/* TAB CONTROL */}
+      <View style={globalStyles.tab_dropdown_parent}>
+        <View style={globalStyles.tab_dropdown_container}>
+          {(value || isFocus) && (
+            <Text
+              style={[
+                globalStyles.tab_dropdown_label,
+                isFocus && { color: "blue" },
+              ]}
+            >
+              Sort By
+            </Text>
+          )}
+          <Dropdown
+            style={[
+              globalStyles.tab_dropdown_dropdown,
+              isFocus && { borderColor: "blue" },
+            ]}
+            placeholderStyle={globalStyles.tab_dropdown_placeholderStyle}
+            selectedTextStyle={globalStyles.tab_dropdown_selectedTextStyle}
+            inputSearchStyle={globalStyles.tab_dropdown_inputSearchStyle}
+            iconStyle={globalStyles.tab_dropdown_iconStyle}
+            data={data}
+            maxHeight={300}
+            labelField="label"
+            valueField="value"
+            placeholder={!isFocus ? "Sort By" : "..."}
+            value={value}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            onChange={(item) => {
+              setActiveTab(item.value);
+              setValue(item.value);
+              setIsFocus(false);
+            }}
+            // renderLeftIcon={() => (
+            //   <Ionicons name="arrow-down" size={30} color="white" />
+            // )}
+          />
+        </View>
+        <View
+          style={
+            {
+              // transform: "translateX(50px)"
+            }
+          }
+        >
+          <TouchableOpacity
+            onPress={() => {
+              setModalVisible(true);
+            }}
+          >
+            <Ionicons name="add-circle" size={30} color="white" />
+          </TouchableOpacity>
         </View>
       </View>
-
-      {activeTab === 0 && <TabCompleted items={completed} />}
-      {activeTab === 1 && <TabPending items={pending} />}
+      {/* TABS */}
+      {activeTab === 0 && <TabPending items={pending} />}
+      {activeTab === 1 && <TabCompleted items={completed} />}
       {activeTab === 2 && <TabTrash items={trash} />}
+      {/* TABS CONTROL */}
 
-      <View style={globalStyles.homePage_tab_parent_1}>
+      {/* <View style={globalStyles.homePage_tab_parent_1}>
         <TouchableOpacity
           onPress={() => {
             setActiveTab(0);
@@ -392,7 +678,7 @@ export const HomePage = () => {
         >
           <Text style={globalStyles.homePage_tab_buttonText_1}>TRASH</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };
