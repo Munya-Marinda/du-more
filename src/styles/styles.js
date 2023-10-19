@@ -166,7 +166,7 @@ export const globalStyles = StyleSheet.create({
     color: "white",
     borderRadius: 5,
     borderColor: "white",
-    width: windowWidth / 1.5,
+    width: windowWidth / 1.2,
   },
   modal_multitext_input: {
     color: "white",
@@ -175,7 +175,7 @@ export const globalStyles = StyleSheet.create({
     borderColor: "white",
     padding: 10,
     margin: 10,
-    width: windowWidth / 1.5,
+    width: windowWidth / 1.2,
   },
   modal_button_group_1: {
     marginTop: 50,
@@ -207,7 +207,7 @@ export const globalStyles = StyleSheet.create({
     display: "flex",
     alignItems: "center",
     flexDirection: "row",
-    width: windowWidth / 1.5,
+    width: windowWidth / 1.2,
     justifyContent: "space-between",
   },
   modal_color_option_group_1: {
@@ -227,6 +227,17 @@ export const globalStyles = StyleSheet.create({
     width: 30,
     margin: 2,
     height: 30,
+  },
+  modal_status_buttons: {
+    fontSize: 9,
+    color: "white",
+    borderWidth: 1,
+    borderRadius: 50,
+    paddingVertical: 7,
+    fontWeight: "bold",
+    marginHorizontal: 7,
+    borderColor: "white",
+    paddingHorizontal: 10,
   },
   //
   //
@@ -299,6 +310,13 @@ export const globalStyles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  row_center: {
+    width: _cardWidth * 0.9,
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
   },
   row_flexEnd: {
     width: _cardWidth * 0.9,

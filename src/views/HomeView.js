@@ -26,7 +26,7 @@ export const HomePage = () => {
   const [message, setMessage] = useState("null");
   const [modalVisible, setModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState(0);
   const [isFocus, setIsFocus] = useState(false);
   //
   const [singleItemData, setSingleItemData] = useState({
@@ -115,53 +115,56 @@ export const HomePage = () => {
   }
 
   const getToDoItems = async () => {
-    const keys = ["completedItems", "pendingItems", "trashedItems"];
-    try {
-      AsyncStorage.multiGet(keys, (err, stores) => {
-        let _message = "";
-        stores.map((result, i, store) => {
-          //
-          let key = store[i][0];
-          let value = JSON.parse(store[i][1]);
-          //
-          switch (key) {
-            case "completedItems":
-              if (value !== null && value !== undefined) {
-                setCompleted(value);
-                _message += value.length + " Completed ToDo Items Were Added. ";
-              } else {
-                setCompleted([]);
-                _message += "No Completed ToDo Items Were Added. ";
-              }
-              break;
-            case "pendingItems":
-              if (value !== null && value !== undefined) {
-                setPending(value);
-                _message += value.length + " Pending ToDo Items Were Added. ";
-              } else {
-                setPending([]);
-                _message += "No Pending ToDo Items Were Added. ";
-              }
-              break;
-            case "trashedItems":
-              if (value !== null && value !== undefined) {
-                setTrash(value);
-                _message += value.length + " Trashed ToDo Items Were Added. ";
-              } else {
-                setTrash([]);
-                _message += "No Trashed ToDo Items Were Added. ";
-              }
-              break;
+    setTimeout(() => {
+      const keys = ["completedItems", "pendingItems", "trashedItems"];
+      try {
+        AsyncStorage.multiGet(keys, (err, stores) => {
+          let _message = "";
+          stores.map((result, i, store) => {
+            //
+            let key = store[i][0];
+            let value = JSON.parse(store[i][1]);
+            //
+            switch (key) {
+              case "completedItems":
+                if (value !== null && value !== undefined) {
+                  setCompleted(value);
+                  _message +=
+                    value.length + " Completed ToDo Items Were Added. ";
+                } else {
+                  setCompleted([]);
+                  _message += "No Completed ToDo Items Were Added. ";
+                }
+                break;
+              case "pendingItems":
+                if (value !== null && value !== undefined) {
+                  setPending(value);
+                  _message += value.length + " Pending ToDo Items Were Added. ";
+                } else {
+                  setPending([]);
+                  _message += "No Pending ToDo Items Were Added. ";
+                }
+                break;
+              case "trashedItems":
+                if (value !== null && value !== undefined) {
+                  setTrash(value);
+                  _message += value.length + " Trashed ToDo Items Were Added. ";
+                } else {
+                  setTrash([]);
+                  _message += "No Trashed ToDo Items Were Added. ";
+                }
+                break;
 
-            default:
-              break;
-          }
+              default:
+                break;
+            }
+          });
+          setMessage(_message);
         });
-        setMessage(_message);
-      });
-    } catch (e) {
-      console.log(e);
-    }
+      } catch (e) {
+        console.log(e);
+      }
+    }, 200);
   };
 
   const addToDoItems = async () => {
@@ -172,16 +175,21 @@ export const HomePage = () => {
         const newItem = singleItemData;
         newItem.id = generateUniqueID();
         pendingItems.push(newItem);
-        console.log("pendingItems", pendingItems);
         await AsyncStorage.setItem(
           "pendingItems",
           JSON.stringify(pendingItems)
         );
         setModalVisible(false);
-        set;
-        getToDoItems();
       }
     } catch (e) {}
+    getToDoItems();
+  };
+
+  const clearTrash = async () => {
+    try {
+      await AsyncStorage.setItem("trashedItems", JSON.stringify([]));
+    } catch (e) {}
+    getToDoItems();
   };
 
   const dev_addToDoItems = async () => {
@@ -455,6 +463,20 @@ export const HomePage = () => {
         }}
       >
         <View style={globalStyles.modal_parent_1}>
+          <View style={[globalStyles.row_center, { marginBottom: 30 }]}>
+            <TouchableOpacity>
+              <Text
+                style={[
+                  globalStyles.modal_status_buttons,
+                  singleItemData.status === "pending"
+                    ? { backgroundColor: "yellow", color: "black" }
+                    : {},
+                ]}
+              >
+                PENDING
+              </Text>
+            </TouchableOpacity>
+          </View>
           {/* INPUTS */}
           <View style={globalStyles.modal_input_group_1}>
             <TextInput
@@ -479,9 +501,10 @@ export const HomePage = () => {
                 });
               }}
               value={singleItemData.note}
-              placeholder={"Add A Note\n...\n...\n...\n"}
+              placeholder={"Add A Note\n...\n...\n...\n\n\n\n\n\n\n\n\n\n"}
               placeholderTextColor={"silver"}
               multiline={true}
+              textAlignVertical="top"
             />
 
             <View style={globalStyles.modal_color_date_group_1}>
@@ -617,9 +640,6 @@ export const HomePage = () => {
               setValue(item.value);
               setIsFocus(false);
             }}
-            // renderLeftIcon={() => (
-            //   <Ionicons name="arrow-down" size={30} color="white" />
-            // )}
           />
         </View>
         <View
@@ -629,19 +649,36 @@ export const HomePage = () => {
             }
           }
         >
-          <TouchableOpacity
-            onPress={() => {
-              setModalVisible(true);
-            }}
-          >
-            <Ionicons name="add-circle" size={30} color="white" />
-          </TouchableOpacity>
+          {activeTab === 0 && (
+            <TouchableOpacity
+              onPress={() => {
+                setModalVisible(true);
+              }}
+            >
+              <Ionicons name="add-circle" size={30} color="white" />
+            </TouchableOpacity>
+          )}
+          {activeTab === 2 && (
+            <TouchableOpacity
+              onPress={() => {
+                clearTrash();
+              }}
+            >
+              <Text style={{ color: "red", padding: 5 }}>Clear Trash</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       {/* TABS */}
-      {activeTab === 0 && <TabPending items={pending} />}
-      {activeTab === 1 && <TabCompleted items={completed} />}
-      {activeTab === 2 && <TabTrash items={trash} />}
+      {activeTab === 0 && (
+        <TabPending items={pending} getToDoItems={getToDoItems} />
+      )}
+      {activeTab === 1 && (
+        <TabCompleted items={completed} getToDoItems={getToDoItems} />
+      )}
+      {activeTab === 2 && (
+        <TabTrash items={trash} getToDoItems={getToDoItems} />
+      )}
       {/* TABS CONTROL */}
 
       {/* <View style={globalStyles.homePage_tab_parent_1}>
