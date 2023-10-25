@@ -10,6 +10,7 @@ export const globalStyles = StyleSheet.create({
     paddingTop: 40,
     display: "flex",
     paddingBottom: 20,
+    position: "relative",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -23,6 +24,11 @@ export const globalStyles = StyleSheet.create({
   homePage_items_scrollView_1: {
     width: windowWidth,
     backgroundColor: "black",
+  },
+  homePage_search_button: {
+    position: "absolute",
+    right: 40,
+    bottom: 25,
   },
   //
   //
@@ -239,6 +245,35 @@ export const globalStyles = StyleSheet.create({
     borderColor: "white",
     paddingHorizontal: 10,
   },
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  // SEARCH ITEMS MODAL
+  search_modal_parent_1: {
+    paddingTop: 30,
+    paddingBottom: 50,
+    width: windowWidth,
+    height: windowHeight,
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  search_modal_text_input: {
+    margin: 10,
+    padding: 10,
+    borderWidth: 1,
+    color: "white",
+    borderRadius: 5,
+    borderColor: "white",
+    width: windowWidth / 1.5,
+  },
+
   //
   //
   //
