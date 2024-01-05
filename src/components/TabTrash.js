@@ -1,21 +1,16 @@
 import { ScrollView } from "react-native";
 import { ToDoItem } from "../components/ToDoItem";
 import { globalStyles } from "../styles/styles";
+import { ToDoItemsByDate } from "./ToDoItemsByDate";
 
-export const TabTrash = ({ items, getToDoItems }) => {
+export const TabTrash = ({ items, getToDoItems, sortedByDate }) => {
   return (
     <ScrollView style={globalStyles.homePage_items_scrollView_1}>
-      {items.map((item, index) => {
-        return (
-          <ToDoItem
-            key={index}
-            index={index}
-            item={item}
-            asyncKey={"trashedItems"}
-            getToDoItems={getToDoItems}
-          />
-        );
-      })}
+      <ToDoItemsByDate
+        items={items}
+        getToDoItems={getToDoItems}
+        sortedByDate={sortedByDate}
+      />
     </ScrollView>
   );
 };

@@ -7,28 +7,28 @@ const _cardWidth = windowWidth * 0.95;
 
 export const globalStyles = StyleSheet.create({
   homePage_top_parent_1: {
-    paddingTop: 40,
     display: "flex",
-    paddingBottom: 20,
-    position: "relative",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "black",
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    marginBottom: 20,
+    backgroundColor: "transparent",
+    justifyContent: "space-between",
   },
   homePage_top_header_1: {
-    fontSize: 30,
+    fontSize: 10,
     color: "white",
     fontWeight: "bold",
   },
   homePage_items_scrollView_1: {
     width: windowWidth,
-    backgroundColor: "black",
+    // backgroundColor: "black",
   },
   homePage_search_button: {
-    position: "absolute",
-    right: 40,
-    bottom: 25,
+    // position: "absolute",
+    // right: 40,
+    // bottom: 25,
   },
   //
   //
@@ -76,34 +76,37 @@ export const globalStyles = StyleSheet.create({
   item_container_1: {
     display: "flex",
     marginBottom: 15,
+    // paddingVertical: 10,
     borderRadius: 10,
     width: _cardWidth,
     flexDirection: "row",
-    position: "relative",
-    backgroundColor: "white",
-    alignItems: "flex-start",
+    // position: "relative",
+    alignItems: "center",
+    backgroundColor: "#ebebeb",
     justifyContent: "flex-start",
-    backgroundColor: "gray",
   },
   item_flag_1: {
-    width: 20,
-    marginLeft: -3,
-    minHeight: 120,
+    width: 15,
+    minHeight: 50,
     borderTopLeftRadius: 5,
     borderBottomLeftRadius: 5,
+    // height: 20,
+    // marginLeft: 10,
+    // borderWidth: 2,
+    // borderRadius: 20,
   },
   item_flag_text_1: {
     color: "transparent",
   },
   item_info_parent_1: {
-    paddingLeft: 10,
-    paddingTop: 20,
-    width: _cardWidth * 0.9,
+    marginLeft: 15,
+    // minHeight: 60,
+    width: _cardWidth * 0.8,
   },
   item_status_text_1_parent: {
-    top: 7,
-    right: 5,
-    position: "absolute",
+    // top: 7,
+    // right: 5,
+    // position: "absolute",
   },
   item_status_text_1: {
     fontSize: 12,
@@ -111,11 +114,11 @@ export const globalStyles = StyleSheet.create({
     display: "none",
   },
   item_title_text_1_parent: {
-    marginBottom: 5,
+    marginBottom: 2,
   },
   item_title_text_1: {
-    fontSize: 18,
-    color: "white",
+    fontSize: 14,
+    color: "black",
     fontWeight: "bold",
   },
   item_note_text_1_parent: {
@@ -123,16 +126,16 @@ export const globalStyles = StyleSheet.create({
   },
   item_note_text_1: {
     fontSize: 12,
-    color: "white",
+    color: "black",
   },
   item_date_text_1_parent: {
-    bottom: 10,
-    right: 10,
-    position: "absolute",
+    // bottom: 10,
+    // right: 10,
+    // position: "absolute",
   },
   item_date_text_1: {
-    fontSize: 12,
-    color: "white",
+    fontSize: 10,
+    color: "black",
   },
   item_indicator: {
     marginRight: 5,
@@ -149,14 +152,14 @@ export const globalStyles = StyleSheet.create({
   //
   // ADD ITEM MODAL
   modal_parent_1: {
-    paddingBottom: 100,
+    paddingTop: 30,
     width: windowWidth,
     height: windowHeight,
-    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    backgroundColor: "rgba(255, 255, 255, 1)",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
   },
   modal_input_group_1: {
     display: "flex",
@@ -169,44 +172,44 @@ export const globalStyles = StyleSheet.create({
     margin: 10,
     padding: 10,
     borderWidth: 1,
-    color: "white",
+    color: "black",
     borderRadius: 5,
-    borderColor: "white",
+    borderColor: "silver",
     width: windowWidth / 1.2,
   },
   modal_multitext_input: {
-    color: "white",
+    color: "black",
     borderWidth: 1,
     borderRadius: 5,
-    borderColor: "white",
+    borderColor: "silver",
     padding: 10,
     margin: 10,
     width: windowWidth / 1.2,
   },
   modal_button_group_1: {
-    marginTop: 50,
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    width: windowWidth / 3,
+    width: windowWidth,
     justifyContent: "center",
+    paddingBottom: 15,
   },
   modal_button_1: {
     margin: 10,
     padding: 10,
-    color: "white",
+    color: "black",
     borderWidth: 1,
     borderRadius: 5,
     textAlign: "center",
-    borderColor: "white",
+    borderColor: "silver",
   },
   modal_button_2: {
     marginRight: 15,
     padding: 10,
-    color: "white",
+    color: "black",
     borderBottomWidth: 2,
     textAlign: "center",
-    borderBottomColor: "white",
+    borderBottomColor: "silver",
   },
   modal_color_date_group_1: {
     marginTop: 10,
@@ -220,13 +223,13 @@ export const globalStyles = StyleSheet.create({
     padding: 2,
     display: "flex",
     flexDirection: "row",
-    borderColor: "white",
+    borderColor: "silver",
     alignItems: "center",
     justifyContent: "center",
   },
   modal_color_option_group_2: {
     borderBottomWidth: 2,
-    borderBottomColor: "white",
+    borderBottomColor: "silver",
     width: windowWidth / 1.2,
   },
   modal_color_option_1: {
@@ -236,13 +239,13 @@ export const globalStyles = StyleSheet.create({
   },
   modal_status_buttons: {
     fontSize: 9,
-    color: "white",
+    color: "gray",
     borderWidth: 1,
     borderRadius: 50,
     paddingVertical: 7,
     fontWeight: "bold",
     marginHorizontal: 7,
-    borderColor: "white",
+    borderColor: "silver",
     paddingHorizontal: 10,
   },
   //
@@ -254,11 +257,10 @@ export const globalStyles = StyleSheet.create({
   //
   // SEARCH ITEMS MODAL
   search_modal_parent_1: {
-    paddingTop: 30,
-    paddingBottom: 50,
+    paddingBottom: 10,
     width: windowWidth,
     height: windowHeight,
-    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    backgroundColor: "white",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -267,11 +269,11 @@ export const globalStyles = StyleSheet.create({
   search_modal_text_input: {
     margin: 10,
     padding: 10,
-    borderWidth: 1,
-    color: "white",
-    borderRadius: 5,
-    borderColor: "white",
-    width: windowWidth / 1.5,
+    borderBottomWidth: 1,
+    color: "black",
+    borderBottomColor: "gray",
+    width: windowWidth * 0.9,
+    textAlign: "center",
   },
 
   //
@@ -282,54 +284,28 @@ export const globalStyles = StyleSheet.create({
   //
   //
   // TAB DROPDOWN
-  tab_dropdown_parent: {
-    display: "flex",
-    paddingBottom: 20,
+  burgerMenuButton: {
+    fontSize: 14,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
     width: windowWidth,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 30,
-    backgroundColor: "black",
-    justifyContent: "space-between",
   },
-  tab_dropdown_container: {
-    width: 150,
-    padding: 0,
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  // TAB DROPDOWN
+  tab_select_botton: {
+    fontSize: 12,
+    color: "black",
     borderWidth: 1,
-    borderRadius: 10,
-    position: "relative",
-    paddingHorizontal: 8,
-    borderColor: "transparent",
-    backgroundColor: "black",
-  },
-  tab_dropdown_icon: {
-    marginRight: 5,
-  },
-  tab_dropdown_label: {
-    top: -10,
-    left: 8,
-    zIndex: 999,
-    fontSize: 10,
-    color: "white",
+    paddingVertical: 5,
     textAlign: "center",
-    position: "absolute",
-    paddingHorizontal: 8,
-    backgroundColor: "black",
-  },
-  tab_dropdown_placeholderStyle: {
-    fontSize: 50,
-  },
-  tab_dropdown_selectedTextStyle: {
-    fontSize: 14,
-    color: "white",
-  },
-  tab_dropdown_iconStyle: {
-    width: 20,
-    height: 20,
-  },
-  tab_dropdown_inputSearchStyle: {
-    height: 40,
-    fontSize: 14,
+    borderColor: "black",
+    width: windowWidth / 3,
   },
   //
   //
@@ -354,7 +330,7 @@ export const globalStyles = StyleSheet.create({
     justifyContent: "center",
   },
   row_flexEnd: {
-    width: _cardWidth * 0.9,
+    // width: _cardWidth * 0.9,
     display: "flex",
     alignItems: "center",
     flexDirection: "row",

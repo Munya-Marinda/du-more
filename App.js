@@ -1,21 +1,22 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, View, StatusBar } from "react-native";
 import { HomePage } from "./src/views/HomeView";
 import { globalStyles } from "./src/styles/styles";
 
 export default function App() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle={"dark-content"} />
       <HomePage />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "rgb(224,230,235)",
+    paddingTop: 50,
     alignItems: "center",
+    backgroundColor: "white",
     justifyContent: "center",
   },
 });
