@@ -7,6 +7,7 @@ import {
   TextInput,
   Dimensions,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState, useEffect } from "react";
 import { globalStyles } from "../styles/styles";
 import { formatDate } from "../js/main";
@@ -17,7 +18,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
+export const ToDoItem = ({
+  item,
+  index,
+  asyncKey,
+  screenMode,
+  getToDoItems,
+}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   //
@@ -364,6 +371,9 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
           setModalVisible(true);
           getToDoItemById(item?.id);
         }}
+        onLongPress={() => {
+          screenMode.function("edit");
+        }}
       >
         <View style={globalStyles.item_parent_1}>
           <View style={globalStyles.item_container_1}>
@@ -438,6 +448,19 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
                 </Text>
               </View>
             </View>
+            {screenMode.value === "edit" && (
+              <View
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderWidth: 2,
+                  borderColor: "blue",
+                  borderRadius: 70,
+                }}
+              >
+                {/* <Text>.</Text> */}
+              </View>
+            )}
           </View>
         </View>
       </TouchableOpacity>

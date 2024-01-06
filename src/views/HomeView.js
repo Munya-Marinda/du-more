@@ -28,12 +28,16 @@ const windowHeight = Dimensions.get("window").height;
 
 export const HomePage = () => {
   const [activeTab, setActiveTab] = useState("PENDING");
+  const [screenMode, setScreenMode] = useState("");
+  //
   const [completed, setCompleted] = useState([]);
   const [pending, setPending] = useState([]);
   const [trash, setTrash] = useState([]);
+  //
   const [completedSortedByDate, setCompletedSortedByDate] = useState({});
   const [pendingSortedByDate, setPendingSortedByDate] = useState({});
   const [trashSortedByDate, setTrashSortedByDate] = useState({});
+  //
   const [sortedByDate, setSortedByDate] = useState(false);
   const [message, setMessage] = useState("null");
   const [modalVisible, setModalVisible] = useState(false);
@@ -253,6 +257,29 @@ export const HomePage = () => {
     } else {
       setSearchedItems([]);
     }
+  };
+
+  const sortTasksByDate = (tasks) => {
+    return tasks.reduce((result, task) => {
+      const date = new Date(task.date);
+      const month = date.toLocaleString("default", { month: "long" });
+      const day = date.getDate();
+
+      if (!result[month]) {
+        result[month] = {};
+      }
+
+      if (!result[month][day]) {
+        result[month][day] = [];
+      }
+
+      result[month][day].push(task);
+      return result;
+    }, {});
+  };
+
+  const handleScreenMode = (mode) => {
+    setScreenMode(mode);
   };
 
   const dev_addToDoItems = async () => {
@@ -746,25 +773,6 @@ export const HomePage = () => {
       AsyncStorage.clear();
       getToDoItems();
     } catch (e) {}
-  };
-
-  const sortTasksByDate = (tasks) => {
-    return tasks.reduce((result, task) => {
-      const date = new Date(task.date);
-      const month = date.toLocaleString("default", { month: "long" });
-      const day = date.getDate();
-
-      if (!result[month]) {
-        result[month] = {};
-      }
-
-      if (!result[month][day]) {
-        result[month][day] = [];
-      }
-
-      result[month][day].push(task);
-      return result;
-    }, {});
   };
 
   //
@@ -1325,7 +1333,9 @@ export const HomePage = () => {
           <Ionicons name="search" size={25} color="gray" />
         </TouchableOpacity>
 
-        <Text style={{ fontWeight: "bold", fontSize: 20 }}>{activeTab}</Text>
+        <Text style={{ fontWeight: "bold", fontSize: 20, textAlign: "center" }}>
+          {activeTab} {"\n"} {screenMode}
+        </Text>
 
         <TouchableOpacity
           onPress={() => {
@@ -1459,6 +1469,7 @@ export const HomePage = () => {
       {/* TABS */}
       {activeTab === "PENDING" && (
         <TabPending
+          screenMode={{ function: handleScreenMode, value: screenMode }}
           getToDoItems={getToDoItems}
           sortedByDate={sortedByDate}
           items={pendingSortedByDate}

@@ -2,11 +2,12 @@ import { View, Text, Dimensions } from "react-native";
 import { ToDoItem } from "./ToDoItem";
 import { useEffect } from "react";
 
-export const ToDoItemsByDate = ({ items, getToDoItems, sortedByDate }) => {
-  //
-  useEffect(() => {
-    console.log("ToDoItemsByDate re-rendered");
-  }, []);
+export const ToDoItemsByDate = ({
+  items,
+  getToDoItems,
+  sortedByDate,
+  screenMode,
+}) => {
   //
   return (
     <>
@@ -39,9 +40,10 @@ export const ToDoItemsByDate = ({ items, getToDoItems, sortedByDate }) => {
                       {items[month][day].map((item, index) => {
                         return (
                           <ToDoItem
+                            item={item}
                             key={index}
                             index={index}
-                            item={item}
+                            screenMode={screenMode}
                             asyncKey={"pendingItems"}
                             getToDoItems={getToDoItems}
                           />
@@ -87,9 +89,10 @@ export const ToDoItemsByDate = ({ items, getToDoItems, sortedByDate }) => {
                           {items[month][day].reverse().map((item, index) => {
                             return (
                               <ToDoItem
+                                item={item}
                                 key={index}
                                 index={index}
-                                item={item}
+                                screenMode={screenMode}
                                 asyncKey={"pendingItems"}
                                 getToDoItems={getToDoItems}
                               />
