@@ -21,7 +21,14 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   //
-  const [singleItemData, setSingleItemData] = useState(item);
+  const [singleItemData, setSingleItemData] = useState({
+    flag: "green",
+    status: "pending",
+    title: "",
+    note: "",
+    date: new Date(),
+    date_created: new Date(),
+  });
   //
   const colorOptions = [
     "green",
@@ -39,33 +46,6 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
     "teal",
     "maroon",
   ];
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
   //
   const saveToDoItems = async () => {
     try {
@@ -120,6 +100,28 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
     setModalVisible(false);
   };
   //
+  const getToDoItemById = async (id) => {
+    try {
+      const value = await AsyncStorage.getItem(asyncKey);
+
+      if (value !== null) {
+        const items = JSON.parse(value);
+        let matchFound = false;
+        items.forEach((_item, index) => {
+          if (_item.id === id) {
+            setSingleItemData(_item);
+            matchFound = true;
+          }
+        });
+        console.log(
+          matchFound ? "MATCHING ITEM FOUND!" : "MATCHING ITEM NOT FOUND!"
+        );
+      }
+    } catch (e) {}
+    // getToDoItems();
+    // setModalVisible(false);
+  };
+  //
   //
   //
   //
@@ -160,6 +162,7 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
         }}
       >
         <View style={globalStyles.modal_parent_1}>
+          {/* TASK TITLE */}
           <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: 5 }}>
             {singleItemData.title}
           </Text>
@@ -323,7 +326,7 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
                                 ? {}
                                 : {
                                     borderWidth: 1,
-                                    borderColor: "white",
+                                    borderColor: "black",
                                   },
                             ]}
                           ></View>
@@ -354,9 +357,12 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
           </View>
         </View>
       </Modal>
+
+      {/* TASK ITEM CARD */}
       <TouchableOpacity
         onPress={() => {
           setModalVisible(true);
+          getToDoItemById(item?.id);
         }}
       >
         <View style={globalStyles.item_parent_1}>
@@ -410,6 +416,7 @@ export const ToDoItem = ({ item, index, asyncKey, getToDoItems }) => {
                 </>
               )}
             </View>
+
             <View
               style={[
                 globalStyles.item_flag_1,

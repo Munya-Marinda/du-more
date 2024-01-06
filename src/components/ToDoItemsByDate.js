@@ -1,10 +1,15 @@
 import { View, Text, Dimensions } from "react-native";
 import { ToDoItem } from "./ToDoItem";
+import { useEffect } from "react";
 
 export const ToDoItemsByDate = ({ items, getToDoItems, sortedByDate }) => {
   //
+  useEffect(() => {
+    console.log("ToDoItemsByDate re-rendered");
+  }, []);
+  //
   return (
-    <> 
+    <>
       {!sortedByDate ? (
         <>
           {Object.keys(items).map((month, index) => {
