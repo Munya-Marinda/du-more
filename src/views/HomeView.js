@@ -22,13 +22,31 @@ import { TabPending } from "../components/TabPending";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Dropdown } from "react-native-element-dropdown";
 import { ToDoItem } from "../components/ToDoItem";
+import {
+  DEV_TEST_DATA_COMPLETED,
+  DEV_TEST_DATA_PENDING,
+  DEV_TEST_DATA_TRASH,
+} from "../js/main";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 export const HomePage = () => {
+  const initialItemState = {
+    flag: "green",
+    status: "pending",
+    title: "",
+    note: "",
+    date: new Date(),
+    date_created: new Date(),
+  };
+  //
   const [activeTab, setActiveTab] = useState("PENDING");
-  const [screenMode, setScreenMode] = useState("");
+  const [screenMode, setScreenMode] = useState({
+    handleScreenMode: handleScreenMode,
+    value: "",
+    selectedItemsID: [],
+  });
   //
   const [completed, setCompleted] = useState([]);
   const [pending, setPending] = useState([]);
@@ -48,14 +66,7 @@ export const HomePage = () => {
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
   const [devMode, setDevMode] = useState(false);
   //
-  const [singleItemData, setSingleItemData] = useState({
-    flag: "green",
-    status: "pending",
-    title: "",
-    note: "",
-    date: new Date(),
-    date_created: new Date(),
-  });
+  const [singleItemData, setSingleItemData] = useState(initialItemState);
 
   const colorOptions = [
     "green",
@@ -152,7 +163,9 @@ export const HomePage = () => {
                   setCompleted(value);
                   _message +=
                     value.length + " Completed ToDo Items Were Added. ";
-                  setCompletedSortedByDate(sortTasksByDate(value));
+                  setCompletedSortedByDate(
+                    sortObjectByMonth(sortTasksByDate(value))
+                  );
                 } else {
                   setCompleted([]);
                   setNullItem("completedItems");
@@ -163,7 +176,9 @@ export const HomePage = () => {
                 if (value !== null && value !== undefined) {
                   setPending(value);
                   _message += value.length + " Pending ToDo Items Were Added. ";
-                  setPendingSortedByDate(sortTasksByDate(value));
+                  setPendingSortedByDate(
+                    sortObjectByMonth(sortTasksByDate(value))
+                  );
                 } else {
                   setPending([]);
                   setNullItem("pendingItems");
@@ -174,7 +189,9 @@ export const HomePage = () => {
                 if (value !== null && value !== undefined) {
                   setTrash(value);
                   _message += value.length + " Trashed ToDo Items Were Added. ";
-                  setTrashSortedByDate(sortTasksByDate(value));
+                  setTrashSortedByDate(
+                    sortObjectByMonth(sortTasksByDate(value))
+                  );
                 } else {
                   setTrash([]);
                   setNullItem("trashedItems");
@@ -207,14 +224,8 @@ export const HomePage = () => {
           JSON.stringify(pendingItems)
         );
         setModalVisible(false);
-        setSingleItemData({
-          flag: "green",
-          status: "pending",
-          title: "",
-          note: "",
-          date: new Date(),
-          date_created: new Date(),
-        });
+        setActiveTab("PENDING");
+        setSingleItemData(initialItemState);
       }
     } catch (e) {}
     getToDoItems();
@@ -259,6 +270,35 @@ export const HomePage = () => {
     }
   };
 
+  const sortObjectByMonth = (obj) => {
+    // Convert the object to an array of key-value pairs
+    const entries = Object.entries(obj);
+
+    // Sort the array of key-value pairs by month
+    const sortedEntries = entries.sort(([monthA], [monthB]) => {
+      const monthsOrder = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      return monthsOrder.indexOf(monthA) - monthsOrder.indexOf(monthB);
+    });
+
+    // Convert the sorted array back to an object
+    const sortedObject = Object.fromEntries(sortedEntries);
+
+    return sortedObject;
+  };
+
   const sortTasksByDate = (tasks) => {
     return tasks.reduce((result, task) => {
       const date = new Date(task.date);
@@ -279,490 +319,194 @@ export const HomePage = () => {
   };
 
   const handleScreenMode = (mode) => {
-    setScreenMode(mode);
+    setScreenMode((prevScreenMode) => ({
+      ...prevScreenMode,
+      value: mode,
+    }));
+  };
+
+  const selectedItemsIds = (item) => {
+    if (screenMode.selectedItemsID.indexOf(item) !== -1) {
+      setScreenMode((prevScreenMode) => ({
+        ...prevScreenMode,
+        selectedItemsID: prevScreenMode.selectedItemsID.filter(
+          (selectedItem) => selectedItem !== item
+        ),
+      }));
+    } else {
+      setScreenMode((prevScreenMode) => ({
+        ...prevScreenMode,
+        selectedItemsID: [...prevScreenMode.selectedItemsID, item],
+      }));
+    }
+  };
+
+  const editSelectedItems = async (moveTo) => {
+    try {
+      const asyncKeys = {
+        COMPLETED: "completedItems",
+        PENDING: "pendingItems",
+        TRASH: "trashedItems",
+      };
+      const value = await AsyncStorage.getItem(asyncKeys[activeTab]);
+
+      if (value !== null) {
+        const items = JSON.parse(value);
+        const newItems = [];
+        const oldItems = [];
+        //
+        items.forEach((_item) => {
+          if (screenMode.selectedItemsID.indexOf(_item.id) === -1) {
+            newItems.push(_item);
+          } else {
+            _item.status = moveTo.toLowerCase();
+            oldItems.push(_item);
+          }
+        });
+        //
+        switch (asyncKeys[activeTab]) {
+          case "completedItems":
+            setPendingSortedByDate(sortTasksByDate(newItems));
+          case "pendingItems":
+            setCompletedSortedByDate(sortTasksByDate(newItems));
+          case "trashedItems":
+            setTrashSortedByDate(sortTasksByDate(newItems));
+          default:
+            break;
+        }
+        // save the new list of items
+        await AsyncStorage.setItem(
+          asyncKeys[activeTab],
+          JSON.stringify(newItems)
+        );
+        // move the old list of items
+        const newAsyncValue = await AsyncStorage.getItem(asyncKeys[moveTo]);
+        if (newAsyncValue !== null) {
+          const newAsyncItems = JSON.parse(newAsyncValue);
+          const newCombinedItems = [...oldItems, ...newAsyncItems];
+          await AsyncStorage.setItem(
+            asyncKeys[moveTo],
+            JSON.stringify(newCombinedItems)
+          );
+          switch (moveTo) {
+            case "COMPLETED":
+              setPendingSortedByDate(sortTasksByDate(newCombinedItems));
+            case "PENDING":
+              setCompletedSortedByDate(sortTasksByDate(newCombinedItems));
+            case "TRASH":
+              setTrashSortedByDate(sortTasksByDate(newCombinedItems));
+
+            default:
+              break;
+          }
+        }
+
+        //
+        setScreenMode((prevScreenMode) => ({
+          ...prevScreenMode,
+          selectedItemsID: [],
+        }));
+        handleScreenMode("");
+      }
+    } catch (e) {}
+    getToDoItems();
+    setModalVisible(false);
+  };
+
+  const selectAllItems = () => {
+    let currentItems = [];
+    let currentItemsIds = [];
+    switch (activeTab) {
+      case "PENDING":
+        currentItems = pending;
+        break;
+      case "COMPLETED":
+        currentItems = completed;
+        break;
+      case "TRASH":
+        currentItems = trash;
+        break;
+      default:
+        break;
+    }
+
+    currentItems.forEach((item) => {
+      currentItemsIds.push(item.id);
+    });
+
+    if (currentItems.length === screenMode.selectedItemsID.length) {
+      setScreenMode((prevScreenMode) => ({
+        ...prevScreenMode,
+        selectedItemsID: [],
+      }));
+    } else {
+      setScreenMode((prevScreenMode) => ({
+        ...prevScreenMode,
+        selectedItemsID: currentItemsIds,
+      }));
+    }
+  };
+
+  const deleteSelectedItemsFromTrash = async () => {
+    try {
+      const asyncKeys = {
+        COMPLETED: "completedItems",
+        PENDING: "pendingItems",
+        TRASH: "trashedItems",
+      };
+      const value = await AsyncStorage.getItem(asyncKeys[activeTab]);
+
+      if (value !== null) {
+        const items = JSON.parse(value);
+        const newItems = [];
+        //
+        items.forEach((_item) => {
+          if (screenMode.selectedItemsID.indexOf(_item.id) === -1) {
+            newItems.push(_item);
+          }
+        });
+        //
+        switch (asyncKeys[activeTab]) {
+          case "completedItems":
+            setPendingSortedByDate(sortTasksByDate(newItems));
+          case "pendingItems":
+            setCompletedSortedByDate(sortTasksByDate(newItems));
+          case "trashedItems":
+            setTrashSortedByDate(sortTasksByDate(newItems));
+          default:
+            break;
+        }
+        // save the new list of items
+        await AsyncStorage.setItem(
+          asyncKeys[activeTab],
+          JSON.stringify(newItems)
+        );
+
+        //
+        setScreenMode((prevScreenMode) => ({
+          ...prevScreenMode,
+          selectedItemsID: [],
+        }));
+        handleScreenMode("");
+      }
+    } catch (e) {}
+    getToDoItems();
+    setModalVisible(false);
   };
 
   const dev_addToDoItems = async () => {
     try {
       await AsyncStorage.setItem(
         "completedItems",
-        JSON.stringify([
-          {
-            id: "task019",
-            flag: "green",
-            status: "completed",
-            title: "Beach Day",
-            note: "Plan a day trip to the beach for relaxation and fun.",
-            date: "2023-07-10T09:30:00",
-          },
-          {
-            id: "task020",
-            flag: "pink",
-            status: "completed",
-            title: "Outdoor Barbecue",
-            note: "Host a barbecue party with friends and family in the backyard.",
-            date: "2023-07-20T16:00:00",
-          },
-          {
-            id: "task021",
-            flag: "orange",
-            status: "completed",
-            title: "Learn a New Skill",
-            note: "Start learning a new skill or hobby during free time.",
-            date: "2023-07-29T13:45:00",
-          },
-          {
-            id: "task022",
-            flag: "green",
-            status: "completed",
-            title: "Plan a Picnic",
-            note: "Organize a picnic in the local park with friends.",
-            date: "2023-08-08T12:00:00",
-          },
-          {
-            id: "task023",
-            flag: "pink",
-            status: "completed",
-            title: "DIY Craft Projects",
-            note: "Engage in creative DIY craft projects at home.",
-            date: "2023-08-18T14:30:00",
-          },
-          {
-            id: "task024",
-            flag: "orange",
-            status: "completed",
-            title: "Virtual Book Club",
-            note: "Start or join a virtual book club for literary discussions.",
-            date: "2023-08-27T17:15:00",
-          },
-          {
-            id: "task025",
-            flag: "green",
-            status: "completed",
-            title: "Fall Cleaning",
-            note: "Prepare the home for the fall season with a thorough cleaning.",
-            date: "2023-09-05T10:30:00",
-          },
-          {
-            id: "task026",
-            flag: "pink",
-            status: "completed",
-            title: "Explore Local Trails",
-            note: "Take scenic walks and explore local trails for outdoor exercise.",
-            date: "2023-09-15T15:00:00",
-          },
-          {
-            id: "task027",
-            flag: "orange",
-            status: "completed",
-            title: "Backyard Bonfire Night",
-            note: "Host a cozy bonfire night in the backyard with friends.",
-            date: "2023-09-28T19:45:00",
-          },
-        ])
+        JSON.stringify(DEV_TEST_DATA_COMPLETED)
       );
       await AsyncStorage.setItem(
         "pendingItems",
-        JSON.stringify([
-          {
-            id: "task001",
-            flag: "green",
-            status: "pending",
-            title: "Clean the Garage",
-            note: "Garage cleaning and organizing task.",
-            date: "2023-01-10T09:30:00",
-          },
-          {
-            id: "task002",
-            flag: "pink",
-            status: "pending",
-            title: "Organize Living Room",
-            note: "Arrange furniture and clean the living room.",
-            date: "2023-01-15T14:00:00",
-          },
-          {
-            id: "task003",
-            flag: "orange",
-            status: "pending",
-            title: "Home Office Setup",
-            note: "Set up a comfortable home office space.",
-            date: "2023-01-28T11:00:00",
-          },
-          {
-            id: "task004",
-            flag: "green",
-            status: "pending",
-            title: "Deep Clean Kitchen",
-            note: "Thoroughly clean and organize the kitchen.",
-            date: "2023-02-05T10:45:00",
-          },
-          {
-            id: "task005",
-            flag: "pink",
-            status: "pending",
-            title: "Plant Indoor Garden",
-            note: "Add indoor plants to enhance the home environment.",
-            date: "2023-02-18T13:30:00",
-          },
-          {
-            id: "task006",
-            flag: "orange",
-            status: "pending",
-            title: "Home Workout Routine",
-            note: "Establish a consistent home workout routine.",
-            date: "2023-02-25T15:15:00",
-          },
-          {
-            id: "task007",
-            flag: "green",
-            status: "pending",
-            title: "Organize Bookshelf",
-            note: "Arrange books and declutter the bookshelf.",
-            date: "2023-03-08T12:00:00",
-          },
-          {
-            id: "task008",
-            flag: "pink",
-            status: "pending",
-            title: "Spring Cleaning",
-            note: "Deep clean and refresh the entire house for spring.",
-            date: "2023-03-20T09:30:00",
-          },
-          {
-            id: "task009",
-            flag: "orange",
-            status: "pending",
-            title: "Digital Detox Day",
-            note: "Take a day off from screens and enjoy offline activities.",
-            date: "2023-03-29T14:45:00",
-          },
-          {
-            id: "task010",
-            flag: "green",
-            status: "pending",
-            title: "Outdoor Cleanup",
-            note: "Clean up the backyard and prepare for outdoor activities.",
-            date: "2023-04-12T11:00:00",
-          },
-          {
-            id: "task011",
-            flag: "pink",
-            status: "pending",
-            title: "Home Painting Project",
-            note: "Start a painting project to refresh the home's interior.",
-            date: "2023-04-22T14:30:00",
-          },
-          {
-            id: "task012",
-            flag: "orange",
-            status: "pending",
-            title: "Explore New Recipes",
-            note: "Try cooking new recipes and explore different cuisines.",
-            date: "2023-04-29T12:15:00",
-          },
-          {
-            id: "task013",
-            flag: "green",
-            status: "pending",
-            title: "Gardening Day",
-            note: "Plant flowers and vegetables in the garden.",
-            date: "2023-05-08T10:00:00",
-          },
-          {
-            id: "task014",
-            flag: "pink",
-            status: "pending",
-            title: "DIY Home Decor",
-            note: "Create handmade decorations to personalize the home.",
-            date: "2023-05-18T13:45:00",
-          },
-          {
-            id: "task015",
-            flag: "orange",
-            status: "pending",
-            title: "Virtual Home Tour",
-            note: "Organize a virtual home tour with friends and family.",
-            date: "2023-05-29T15:30:00",
-          },
-          {
-            id: "task016",
-            flag: "green",
-            status: "pending",
-            title: "Family Movie Night",
-            note: "Set up a cozy movie night with family at home.",
-            date: "2023-06-06T18:00:00",
-          },
-          {
-            id: "task017",
-            flag: "pink",
-            status: "pending",
-            title: "Organize Digital Files",
-            note: "Sort and organize digital files on the computer.",
-            date: "2023-06-15T11:30:00",
-          },
-          {
-            id: "task018",
-            flag: "orange",
-            status: "pending",
-            title: "Summer Cleaning",
-            note: "Deep clean and declutter for a fresh start to summer.",
-            date: "2023-06-28T14:45:00",
-          },
-          {
-            id: "task019",
-            flag: "green",
-            status: "pending",
-            title: "Beach Day",
-            note: "Plan a day trip to the beach for relaxation and fun.",
-            date: "2023-07-10T09:30:00",
-          },
-          {
-            id: "task020",
-            flag: "pink",
-            status: "pending",
-            title: "Outdoor Barbecue",
-            note: "Host a barbecue party with friends and family in the backyard.",
-            date: "2023-07-20T16:00:00",
-          },
-          {
-            id: "task021",
-            flag: "orange",
-            status: "pending",
-            title: "Learn a New Skill",
-            note: "Start learning a new skill or hobby during free time.",
-            date: "2023-07-29T13:45:00",
-          },
-          {
-            id: "task022",
-            flag: "green",
-            status: "pending",
-            title: "Plan a Picnic",
-            note: "Organize a picnic in the local park with friends.",
-            date: "2023-08-08T12:00:00",
-          },
-          {
-            id: "task023",
-            flag: "pink",
-            status: "pending",
-            title: "DIY Craft Projects",
-            note: "Engage in creative DIY craft projects at home.",
-            date: "2023-08-18T14:30:00",
-          },
-          {
-            id: "task024",
-            flag: "orange",
-            status: "pending",
-            title: "Virtual Book Club",
-            note: "Start or join a virtual book club for literary discussions.",
-            date: "2023-08-27T17:15:00",
-          },
-          {
-            id: "task025",
-            flag: "green",
-            status: "pending",
-            title: "Fall Cleaning",
-            note: "Prepare the home for the fall season with a thorough cleaning.",
-            date: "2023-09-05T10:30:00",
-          },
-          {
-            id: "task026",
-            flag: "pink",
-            status: "pending",
-            title: "Explore Local Trails",
-            note: "Take scenic walks and explore local trails for outdoor exercise.",
-            date: "2023-09-15T15:00:00",
-          },
-          {
-            id: "task027",
-            flag: "orange",
-            status: "pending",
-            title: "Backyard Bonfire Night",
-            note: "Host a cozy bonfire night in the backyard with friends.",
-            date: "2023-09-28T19:45:00",
-          },
-          {
-            id: "task028",
-            flag: "green",
-            status: "pending",
-            title: "Pumpkin Carving",
-            note: "Engage in pumpkin carving activities for Halloween decorations.",
-            date: "2023-10-10T14:00:00",
-          },
-          {
-            id: "task029",
-            flag: "pink",
-            status: "pending",
-            title: "Home Movie Night",
-            note: "Create a cozy home movie night with favorite films and snacks.",
-            date: "2023-10-22T19:30:00",
-          },
-          {
-            id: "task030",
-            flag: "orange",
-            status: "pending",
-            title: "Try a New Recipe",
-            note: "Experiment with cooking by trying out a new recipe for dinner.",
-            date: "2023-10-30T18:15:00",
-          },
-          {
-            id: "task031",
-            flag: "green",
-            status: "pending",
-            title: "Thanksgiving Prep",
-            note: "Prepare for Thanksgiving by planning the menu and decorations.",
-            date: "2023-11-10T12:45:00",
-          },
-          {
-            id: "task032",
-            flag: "pink",
-            status: "pending",
-            title: "Nature Walk",
-            note: "Take a leisurely nature walk to enjoy the fall foliage.",
-            date: "2023-11-18T15:30:00",
-          },
-          {
-            id: "task033",
-            flag: "orange",
-            status: "pending",
-            title: "Gratitude Journaling",
-            note: "Start a gratitude journal to reflect on daily blessings.",
-            date: "2023-11-27T21:00:00",
-          },
-          {
-            id: "task034",
-            flag: "green",
-            status: "pending",
-            title: "Holiday Decorations",
-            note: "Decorate the home with festive holiday decorations and lights.",
-            date: "2023-12-05T17:00:00",
-          },
-          {
-            id: "task035",
-            flag: "pink",
-            status: "pending",
-            title: "Virtual Holiday Party",
-            note: "Host a virtual holiday party for friends and family.",
-            date: "2023-12-18T20:15:00",
-          },
-          {
-            id: "task036",
-            flag: "orange",
-            status: "pending",
-            title: "Year-End Reflection",
-            note: "Reflect on the achievements and experiences of the year.",
-            date: "2023-12-31T23:59:59",
-          },
-        ])
+        JSON.stringify(DEV_TEST_DATA_PENDING)
       );
       await AsyncStorage.setItem(
         "trashedItems",
-        JSON.stringify([
-          {
-            id: "task011",
-            flag: "pink",
-            status: "trash",
-            title: "Home Painting Project",
-            note: "Start a painting project to refresh the home's interior.",
-            date: "2023-04-22T14:30:00",
-          },
-          {
-            id: "task012",
-            flag: "orange",
-            status: "trash",
-            title: "Explore New Recipes",
-            note: "Try cooking new recipes and explore different cuisines.",
-            date: "2023-04-29T12:15:00",
-          },
-          {
-            id: "task013",
-            flag: "green",
-            status: "trash",
-            title: "Gardening Day",
-            note: "Plant flowers and vegetables in the garden.",
-            date: "2023-05-08T10:00:00",
-          },
-          {
-            id: "task014",
-            flag: "pink",
-            status: "trash",
-            title: "DIY Home Decor",
-            note: "Create handmade decorations to personalize the home.",
-            date: "2023-05-18T13:45:00",
-          },
-          {
-            id: "task015",
-            flag: "orange",
-            status: "trash",
-            title: "Virtual Home Tour",
-            note: "Organize a virtual home tour with friends and family.",
-            date: "2023-05-29T15:30:00",
-          },
-          {
-            id: "task016",
-            flag: "green",
-            status: "trash",
-            title: "Family Movie Night",
-            note: "Set up a cozy movie night with family at home.",
-            date: "2023-06-06T18:00:00",
-          },
-          {
-            id: "task017",
-            flag: "pink",
-            status: "trash",
-            title: "Organize Digital Files",
-            note: "Sort and organize digital files on the computer.",
-            date: "2023-06-15T11:30:00",
-          },
-          {
-            id: "task018",
-            flag: "orange",
-            status: "trash",
-            title: "Summer Cleaning",
-            note: "Deep clean and declutter for a fresh start to summer.",
-            date: "2023-06-28T14:45:00",
-          },
-          {
-            id: "task019",
-            flag: "green",
-            status: "trash",
-            title: "Beach Day",
-            note: "Plan a day trip to the beach for relaxation and fun.",
-            date: "2023-07-10T09:30:00",
-          },
-
-          {
-            id: "task024",
-            flag: "orange",
-            status: "trash",
-            title: "Virtual Book Club",
-            note: "Start or join a virtual book club for literary discussions.",
-            date: "2023-08-27T17:15:00",
-          },
-          {
-            id: "task025",
-            flag: "green",
-            status: "trash",
-            title: "Fall Cleaning",
-            note: "Prepare the home for the fall season with a thorough cleaning.",
-            date: "2023-09-05T10:30:00",
-          },
-          {
-            id: "task026",
-            flag: "pink",
-            status: "trash",
-            title: "Explore Local Trails",
-            note: "Take scenic walks and explore local trails for outdoor exercise.",
-            date: "2023-09-15T15:00:00",
-          },
-          {
-            id: "task027",
-            flag: "orange",
-            status: "trash",
-            title: "Backyard Bonfire Night",
-            note: "Host a cozy bonfire night in the backyard with friends.",
-            date: "2023-09-28T19:45:00",
-          },
-        ])
+        JSON.stringify(DEV_TEST_DATA_TRASH)
       );
       getToDoItems();
     } catch (e) {}
@@ -844,14 +588,16 @@ export const HomePage = () => {
   //
   return (
     <View style={{ position: "relative" }}>
-      <TouchableOpacity
-        style={{ position: "absolute", bottom: 30, right: 30, zIndex: 999 }}
-        onPress={() => {
-          setModalVisible(true);
-        }}
-      >
-        <Ionicons name="add-circle" size={50} color="grey" />
-      </TouchableOpacity>
+      {screenMode.value !== "edit" && (
+        <TouchableOpacity
+          style={{ position: "absolute", bottom: 30, right: 30, zIndex: 999 }}
+          onPress={() => {
+            setModalVisible(true);
+          }}
+        >
+          <Ionicons name="add-circle" size={50} color="grey" />
+        </TouchableOpacity>
+      )}
 
       <StatusBar hidden={false} />
 
@@ -869,103 +615,21 @@ export const HomePage = () => {
             setShowBurgerMenu(!showBurgerMenu);
           }}
           style={{
-            position: "relative",
+            display: "flex",
             width: windowWidth,
             height: windowHeight,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            alignItems: "center",
+            flexDirection: "column",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.8)",
           }}
         >
           <View
             style={{
-              bottom: 0,
-              // right: 20,
-              zIndex: 999,
-              width: windowWidth,
-              // borderWidth: 1,
-              position: "absolute",
-              // borderColor: "silver",
+              width: windowWidth * 0.8,
               backgroundColor: "white",
             }}
           >
-            <Text
-              style={[
-                {
-                  fontSize: 12,
-                  paddingVertical: 5,
-                  paddingHorizontal: 20,
-                  backgroundColor: "#e1e1e1",
-                },
-              ]}
-            >
-              Tabs
-            </Text>
-            {activeTab !== "PENDING" && (
-              <Pressable
-                onPress={() => {
-                  setShowBurgerMenu(false);
-                  setActiveTab("PENDING");
-                }}
-              >
-                {({ pressed }) => (
-                  <Text
-                    style={[
-                      {
-                        opacity: pressed ? 0.5 : 1,
-                        backgroundColor: "silver",
-                      },
-                      globalStyles.burgerMenuButton,
-                    ]}
-                  >
-                    Pending Tasks
-                  </Text>
-                )}
-              </Pressable>
-            )}
-            {activeTab !== "COMPLETED" && (
-              <Pressable
-                onPress={() => {
-                  setShowBurgerMenu(false);
-                  setActiveTab("COMPLETED");
-                }}
-              >
-                {({ pressed }) => (
-                  <Text
-                    style={[
-                      {
-                        opacity: pressed ? 0.5 : 1,
-                        backgroundColor: "silver",
-                      },
-                      globalStyles.burgerMenuButton,
-                    ]}
-                  >
-                    Completed Tasks
-                  </Text>
-                )}
-              </Pressable>
-            )}
-            {activeTab !== "TRASH" && (
-              <Pressable
-                onPress={() => {
-                  setShowBurgerMenu(false);
-                  setActiveTab("TRASH");
-                }}
-              >
-                {({ pressed }) => (
-                  <Text
-                    style={[
-                      {
-                        opacity: pressed ? 0.5 : 1,
-                        backgroundColor: "silver",
-                      },
-                      globalStyles.burgerMenuButton,
-                    ]}
-                  >
-                    View Trash Bin
-                  </Text>
-                )}
-              </Pressable>
-            )}
-
             <Text
               style={[
                 {
@@ -991,22 +655,128 @@ export const HomePage = () => {
               }}
             >
               {({ pressed }) => (
+                <Text
+                  style={[
+                    {
+                      opacity: pressed ? 0.5 : 1,
+                      backgroundColor: "white",
+                      borderTopColor: "gray",
+                      borderTopWidth: 1,
+                    },
+                    globalStyles.burgerMenuButton,
+                  ]}
+                >
+                  <Ionicons
+                    name={sortedByDate ? "arrow-up" : "arrow-down"}
+                    size={20}
+                    color="black"
+                  />
+                  {"  "} Sort By Date
+                </Text>
+              )}
+            </Pressable>
+
+            <Text
+              style={[
+                {
+                  fontSize: 12,
+                  paddingVertical: 5,
+                  paddingHorizontal: 20,
+                  backgroundColor: "#e1e1e1",
+                },
+              ]}
+            >
+              Actions
+            </Text>
+            <Pressable
+              onPress={() => {
+                setShowBurgerMenu(false);
+                handleScreenMode("edit");
+              }}
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "flex-start",
+              }}
+            >
+              {({ pressed }) => (
+                <Text
+                  style={[
+                    {
+                      opacity: pressed ? 0.5 : 1,
+                      backgroundColor: "white",
+                      borderTopColor: "gray",
+                      borderTopWidth: 1,
+                    },
+                    globalStyles.burgerMenuButton,
+                  ]}
+                >
+                  <Ionicons name={"add"} size={20} color="black" />
+                  {"  "} Add New Task
+                </Text>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                searchItems("");
+                setSearchTerm("");
+                setShowBurgerMenu(false);
+                setSearchModalVisible(true);
+              }}
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "flex-start",
+              }}
+            >
+              {({ pressed }) => (
                 <>
                   <Text
                     style={[
                       {
                         opacity: pressed ? 0.5 : 1,
-                        backgroundColor: "silver",
+                        backgroundColor: "white",
+                        borderTopColor: "gray",
+                        borderTopWidth: 1,
                       },
                       globalStyles.burgerMenuButton,
                     ]}
                   >
-                    Sort By Date
-                    <Ionicons
-                      name={sortedByDate ? "arrow-up" : "arrow-down"}
-                      size={20}
-                      color="grey"
-                    />
+                    <Ionicons name="search" size={20} color="black" />
+                    {"  "} Search Tasks
+                  </Text>
+                </>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setShowBurgerMenu(false);
+                handleScreenMode("edit");
+              }}
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "flex-start",
+              }}
+            >
+              {({ pressed }) => (
+                <>
+                  <Text
+                    style={[
+                      {
+                        opacity: pressed ? 0.5 : 1,
+                        backgroundColor: "white",
+                        borderTopColor: "gray",
+                        borderTopWidth: 1,
+                      },
+                      globalStyles.burgerMenuButton,
+                    ]}
+                  >
+                    <Ionicons name={"pencil-sharp"} size={20} color="black" />
+                    {"  "} Edit Tasks
                   </Text>
                 </>
               )}
@@ -1043,7 +813,8 @@ export const HomePage = () => {
                         globalStyles.burgerMenuButton,
                       ]}
                     >
-                      Create Test Data
+                      <Ionicons name={"skull"} size={20} color="black" />
+                      {"  "} Create Test Data
                     </Text>
                   )}
                 </Pressable>
@@ -1063,12 +834,59 @@ export const HomePage = () => {
                         globalStyles.burgerMenuButton,
                       ]}
                     >
-                      Delete All Data
+                      <Ionicons name={"skull"} size={20} color="black" />
+                      {"  "} Delete All Data
+                    </Text>
+                  )}
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setDevMode(false);
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        {
+                          opacity: pressed ? 0.5 : 1,
+                          backgroundColor: "#ffa1a1",
+                        },
+                        globalStyles.burgerMenuButton,
+                      ]}
+                    >
+                      <Ionicons name={"skull"} size={20} color="black" />
+                      {"  "} Turn Off Dev Mode
                     </Text>
                   )}
                 </Pressable>
               </>
             )}
+
+            <Pressable
+              onPress={() => {
+                setShowBurgerMenu(false);
+              }}
+            >
+              {({ pressed }) => (
+                <Text
+                  style={[
+                    {
+                      fontSize: 14,
+                      color: "white",
+                      fontWeight: "bold",
+                      paddingVertical: 15,
+                      textAlign: "center",
+                      paddingHorizontal: 20,
+                      backgroundColor: "gray",
+                      width: windowWidth * 0.8,
+                      opacity: pressed ? 0.5 : 1,
+                    },
+                  ]}
+                >
+                  CLOSE
+                </Text>
+              )}
+            </Pressable>
           </View>
         </Pressable>
       </Modal>
@@ -1080,6 +898,7 @@ export const HomePage = () => {
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(!modalVisible);
+          setSingleItemData(initialItemState);
         }}
       >
         <View style={globalStyles.modal_parent_1}>
@@ -1275,11 +1094,12 @@ export const HomePage = () => {
                 {searchedItems.map((item, index) => {
                   return (
                     <ToDoItem
+                      item={item}
                       key={index}
                       index={index}
-                      item={item}
                       asyncKey={"completedItems"}
                       getToDoItems={getToDoItems}
+                      screenMode={screenMode}
                     />
                   );
                 })}
@@ -1310,166 +1130,356 @@ export const HomePage = () => {
       </Modal>
 
       {/* TOPBAR */}
-      <View style={globalStyles.homePage_top_parent_1}>
-        {/* <Text
-          onLongPress={() => {
-            dev_deleteToDoItems();
-          }}
-          onPress={() => {
-            dev_addToDoItems();
-          }}
-          style={globalStyles.homePage_top_header_1}
-        >
-          DU-MORE
-        </Text> */}
-        <TouchableOpacity
-          onPress={() => {
-            searchItems("");
-            setSearchTerm("");
-            setSearchModalVisible(true);
-          }}
-          style={globalStyles.homePage_search_button}
-        >
-          <Ionicons name="search" size={25} color="gray" />
-        </TouchableOpacity>
-
-        <Text style={{ fontWeight: "bold", fontSize: 20, textAlign: "center" }}>
-          {activeTab} {"\n"} {screenMode}
-        </Text>
-
-        <TouchableOpacity
-          onPress={() => {
-            setShowBurgerMenu(!showBurgerMenu);
-          }}
-          onLongPress={() => {
-            ToastAndroid.show(
-              !devMode ? "MUNYA Dev Mode Actived" : "MUNYA Dev Mode De-Actived",
-              ToastAndroid.LONG,
-              1000
-            );
-            setDevMode(!devMode);
-          }}
-          style={[
-            globalStyles.homePage_search_button,
-            {
-              backgroundColor: !devMode ? "transparent" : "red",
-              borderRadius: 50,
-              paddingHorizontal: 2,
-            },
-          ]}
-        >
-          <Ionicons
-            name="menu-outline"
-            size={35}
-            color={!devMode ? "gray" : "white"}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* TABS CONTROL */}
-      {/* <View
-        style={{
-          backgroundColor: "transparent",
-          display: "flex",
-          alignItems: "center",
-          flexDirection: "row",
-          justifyContent: "space-evenly",
-          marginVertical: 15,
-        }}
-      >
-        <Pressable
-          onPress={() => {
-            setActiveTab("PENDING");
-          }}
-        >
-          {({ pressed }) => (
-            <Text
-              style={[
-                globalStyles.tab_select_botton,
-                { opacity: pressed ? 0.5 : 1 },
-              ]}
+      {screenMode.value !== "edit" ? (
+        <>
+          <View style={[globalStyles.homePage_top_parent_1]}>
+            {/* <Text
+              style={{ fontWeight: "bold", fontSize: 20, textAlign: "center" }}
             >
-              PENDING
-            </Text>
-          )}
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            setActiveTab("COMPLETED");
-          }}
-        >
-          {({ pressed }) => (
-            <Text
-              style={[
-                globalStyles.tab_select_botton,
-                { opacity: pressed ? 0.5 : 1 },
-              ]}
-            >
-              COMPLETED
-            </Text>
-          )}
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            setActiveTab("TRASH");
-          }}
-        >
-          {({ pressed }) => (
-            <Text
-              style={[
-                globalStyles.tab_select_botton,
-                { opacity: pressed ? 0.5 : 1 },
-              ]}
-            >
-              TRASH
-            </Text>
-          )}
-        </Pressable>
-      </View> */}
-      {/* TAB OPTIONS */}
-      <View style={globalStyles.row_flexEnd}>
-        <View>
-          {activeTab === "TRASH" && (
-            <TouchableOpacity
+              {activeTab}
+            </Text> */}
+
+            <Pressable
               onPress={() => {
-                Alert.alert(
-                  "Clear Trash?",
-                  "All tasks in the trash will be deleted.",
-                  [
-                    {
-                      text: "Yes",
-                      onPress: () => {
-                        return false;
-                      },
-                      style: "cancel",
-                    },
-                    {
-                      text: "Yes",
-                      onPress: () => {
-                        clearTrash();
-                      },
-                    },
-                  ]
-                );
+                searchItems("");
+                setSearchTerm("");
+                setSearchModalVisible(true);
+              }}
+              style={globalStyles.homePage_search_button}
+            >
+              {({ pressed }) => (
+                <Ionicons
+                  name="search"
+                  size={25}
+                  color={!pressed ? "gray" : "rgba(0,0,0,0.4)"}
+                />
+              )}
+            </Pressable>
+
+            <View
+              style={{
+                // width: windowWidth * 0.5,
+                // marginTop: 10,
+                display: "flex",
+                // marginBottom: 20,
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                // backgroundColor: "yellow",
               }}
             >
-              <Text
-                style={{
-                  color: "red",
-                  paddingVertical: 10,
-                  paddingHorizontal: 10,
+              <Pressable
+                onPress={() => {
+                  setActiveTab("PENDING");
                 }}
               >
-                Clear Trash
-              </Text>
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      globalStyles.tab_control_buttons,
+                      {
+                        opacity: pressed ? 0.3 : 1,
+                        backgroundColor:
+                          activeTab !== "PENDING" ? "transparent" : "silver",
+                      },
+                    ]}
+                  >
+                    PENDING: {pending.length}
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setActiveTab("COMPLETED");
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      globalStyles.tab_control_buttons,
+                      {
+                        opacity: pressed ? 0.3 : 1,
+                        backgroundColor:
+                          activeTab !== "COMPLETED" ? "transparent" : "silver",
+                      },
+                    ]}
+                  >
+                    COMPLETED: {completed.length}
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setActiveTab("TRASH");
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      globalStyles.tab_control_buttons,
+                      {
+                        opacity: pressed ? 0.3 : 1,
+                        backgroundColor:
+                          activeTab !== "TRASH" ? "transparent" : "silver",
+                      },
+                    ]}
+                  >
+                    TRASH: {trash.length}
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+
+            <Pressable
+              onPress={() => {
+                setShowBurgerMenu(!showBurgerMenu);
+              }}
+              style={[
+                globalStyles.homePage_search_button,
+                {
+                  borderRadius: 50,
+                  paddingHorizontal: 2,
+                },
+              ]}
+            >
+              {({ pressed }) => (
+                <Ionicons
+                  name="menu-outline"
+                  size={35}
+                  color={"gray"}
+                  style={{ opacity: pressed ? 0.4 : 1 }}
+                />
+              )}
+            </Pressable>
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={globalStyles.homePage_top_parent_1}>
+            <TouchableOpacity
+              onPress={() => {
+                handleScreenMode("");
+                setScreenMode((prevScreenMode) => ({
+                  ...prevScreenMode,
+                  selectedItemsID: [],
+                }));
+              }}
+              style={globalStyles.homePage_search_button}
+            >
+              <Ionicons name="close" size={30} color={"gray"} />
             </TouchableOpacity>
-          )}
-        </View>
-      </View>
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontSize: 20,
+                textAlign: "center",
+              }}
+            >
+              {screenMode.selectedItemsID.length} Selected
+            </Text>
+          </View>
+          <View
+            style={{
+              minHeight: 30,
+              marginTop: 10,
+              marginBottom: 20,
+            }}
+          >
+            <ScrollView horizontal={true}>
+              <Pressable onPress={selectAllItems}>
+                <Text
+                  style={[
+                    globalStyles.edit_options_pills,
+                    {
+                      backgroundColor: "transparent",
+                      borderWidth: 1,
+                      borderColor: "silver",
+                      marginRight: 10,
+                      color: "black",
+                    },
+                  ]}
+                >
+                  SELECT ALL
+                </Text>
+              </Pressable>
+              {activeTab === "TRASH" && (
+                <Pressable
+                  style={{
+                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                  }}
+                  onPress={() => {
+                    Alert.alert(
+                      "Delete Tasks From Trash?",
+                      "The selected tasks will be deleted from the trash.",
+                      [
+                        {
+                          text: "No",
+                          onPress: () => {
+                            return false;
+                          },
+                          style: "cancel",
+                        },
+                        {
+                          text: "Yes",
+                          onPress: () => {
+                            deleteSelectedItemsFromTrash();
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        globalStyles.edit_options_pills,
+                        {
+                          backgroundColor: "red",
+                          opacity: pressed ? 0.5 : 1,
+                        },
+                      ]}
+                    >
+                      DELETE PERMANENTLY
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+              {activeTab !== "PENDING" && (
+                <Pressable
+                  style={{
+                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                  }}
+                  onPress={() => {
+                    if (screenMode.selectedItemsID.length > 0) {
+                      Alert.alert(
+                        "Set Tasks As Pending",
+                        "Set the selected tasks as pending?",
+                        [
+                          {
+                            text: "No",
+                            onPress: () => {
+                              return false;
+                            },
+                            style: "cancel",
+                          },
+                          {
+                            text: "YES",
+                            onPress: () => {
+                              editSelectedItems("PENDING");
+                            },
+                          },
+                        ]
+                      );
+                    }
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        globalStyles.edit_options_pills,
+                        { opacity: pressed ? 0.5 : 1 },
+                      ]}
+                    >
+                      SET AS PENDING
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+              {activeTab !== "COMPLETED" && (
+                <Pressable
+                  style={{
+                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                  }}
+                  onPress={() => {
+                    if (screenMode.selectedItemsID.length > 0) {
+                      Alert.alert(
+                        "Set Tasks As Completed",
+                        "Set the selected tasks as completed?",
+                        [
+                          {
+                            text: "No",
+                            onPress: () => {
+                              return false;
+                            },
+                            style: "cancel",
+                          },
+                          {
+                            text: "YES",
+                            onPress: () => {
+                              editSelectedItems("COMPLETED");
+                            },
+                          },
+                        ]
+                      );
+                    }
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        globalStyles.edit_options_pills,
+                        { opacity: pressed ? 0.5 : 1 },
+                      ]}
+                    >
+                      SET AS COMPLETED
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+              {activeTab !== "TRASH" && (
+                <Pressable
+                  style={{
+                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                  }}
+                  onPress={() => {
+                    if (screenMode.selectedItemsID.length > 0) {
+                      Alert.alert(
+                        "Move To Trash Bin",
+                        "Are you sure you want to move the selected tasks to the trash bin?",
+                        [
+                          {
+                            text: "No",
+                            onPress: () => {
+                              return false;
+                            },
+                            style: "cancel",
+                          },
+                          {
+                            text: "YES",
+                            onPress: () => {
+                              editSelectedItems("TRASH");
+                            },
+                          },
+                        ]
+                      );
+                    }
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        globalStyles.edit_options_pills,
+                        { opacity: pressed ? 0.5 : 1 },
+                      ]}
+                    >
+                      MOVE TO TRASH
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+            </ScrollView>
+          </View>
+        </>
+      )}
       {/* TABS */}
       {activeTab === "PENDING" && (
         <TabPending
-          screenMode={{ function: handleScreenMode, value: screenMode }}
+          screenMode={{
+            handleScreenMode: handleScreenMode,
+            selectedItemsIds: selectedItemsIds,
+            value: screenMode.value,
+            selectedItemsID: screenMode.selectedItemsID,
+          }}
           getToDoItems={getToDoItems}
           sortedByDate={sortedByDate}
           items={pendingSortedByDate}
@@ -1477,17 +1487,120 @@ export const HomePage = () => {
       )}
       {activeTab === "COMPLETED" && (
         <TabCompleted
+          screenMode={{
+            handleScreenMode: handleScreenMode,
+            selectedItemsIds: selectedItemsIds,
+            value: screenMode.value,
+            selectedItemsID: screenMode.selectedItemsID,
+          }}
           getToDoItems={getToDoItems}
           sortedByDate={sortedByDate}
           items={completedSortedByDate}
         />
       )}
       {activeTab === "TRASH" && (
-        <TabTrash
-          getToDoItems={getToDoItems}
-          sortedByDate={sortedByDate}
-          items={trashSortedByDate}
-        />
+        <>
+          <View
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <Pressable
+              style={{
+                width: 20,
+                height: 20,
+                backgroundColor: "transparent",
+              }}
+              onLongPress={() => {
+                if (!devMode) {
+                  Alert.alert(
+                    "SWITCH TO DEVELOPER MODE?",
+                    "By turning on developer mode you will lose your current data but gain additional features used when testing this application. Are you sure?",
+                    [
+                      {
+                        text: "No",
+                        onPress: () => {
+                          return false;
+                        },
+                        style: "cancel",
+                      },
+                      {
+                        text: "YES",
+                        onPress: () => {
+                          ToastAndroid.show(
+                            "Developer Mode Actived",
+                            ToastAndroid.LONG,
+                            1000
+                          );
+                          setDevMode(true);
+                          showBurgerMenu(true);
+                        },
+                      },
+                    ]
+                  );
+                } else {
+                  ToastAndroid.show(
+                    "Developer Mode Already Actived",
+                    ToastAndroid.LONG,
+                    1000
+                  );
+                }
+              }}
+            ></Pressable>
+            {trash.length > 0 && screenMode.value !== "edit" && (
+              <Pressable
+                onPress={() => {
+                  Alert.alert(
+                    "Clear Trash?",
+                    "All tasks in the trash will be deleted.",
+                    [
+                      {
+                        text: "No",
+                        onPress: () => {
+                          return false;
+                        },
+                        style: "cancel",
+                      },
+                      {
+                        text: "Yes",
+                        onPress: () => {
+                          clearTrash();
+                        },
+                      },
+                    ]
+                  );
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={{
+                      color: "red",
+                      paddingVertical: 5,
+                      paddingHorizontal: 10,
+                      opacity: pressed ? 0.5 : 1,
+                    }}
+                  >
+                    Clear Trash
+                  </Text>
+                )}
+              </Pressable>
+            )}
+          </View>
+          <TabTrash
+            screenMode={{
+              handleScreenMode: handleScreenMode,
+              selectedItemsIds: selectedItemsIds,
+              value: screenMode.value,
+              selectedItemsID: screenMode.selectedItemsID,
+            }}
+            getToDoItems={getToDoItems}
+            sortedByDate={sortedByDate}
+            items={trashSortedByDate}
+          />
+        </>
       )}
     </View>
   );

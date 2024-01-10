@@ -103,7 +103,6 @@ export const ToDoItem = ({
         }
       }
     } catch (e) {}
-    getToDoItems();
     setModalVisible(false);
   };
   //
@@ -120,9 +119,6 @@ export const ToDoItem = ({
             matchFound = true;
           }
         });
-        console.log(
-          matchFound ? "MATCHING ITEM FOUND!" : "MATCHING ITEM NOT FOUND!"
-        );
       }
     } catch (e) {}
     // getToDoItems();
@@ -156,7 +152,6 @@ export const ToDoItem = ({
   //
   //
   //
-
   return (
     <>
       {/* MODAL */}
@@ -356,7 +351,11 @@ export const ToDoItem = ({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                saveToDoItems();
+                const _saveToDoItems = async () => {
+                  await saveToDoItems();
+                  getToDoItems();
+                };
+                _saveToDoItems();
               }}
             >
               <Text style={globalStyles.modal_button_1}>SAVE</Text>
@@ -368,16 +367,32 @@ export const ToDoItem = ({
       {/* TASK ITEM CARD */}
       <TouchableOpacity
         onPress={() => {
-          setModalVisible(true);
-          getToDoItemById(item?.id);
+          if (screenMode.value === "edit") {
+            screenMode.selectedItemsIds(item?.id);
+          } else {
+            setModalVisible(true);
+            getToDoItemById(item?.id);
+          }
         }}
         onLongPress={() => {
-          screenMode.function("edit");
+          screenMode.handleScreenMode("edit");
+          screenMode.selectedItemsIds(item?.id);
         }}
       >
         <View style={globalStyles.item_parent_1}>
-          <View style={globalStyles.item_container_1}>
-            <View
+          <View
+            style={[
+              globalStyles.item_container_1,
+              screenMode.value === "edit" &&
+              screenMode.selectedItemsID.indexOf(item?.id) !== -1
+                ? {
+                    borderWidth: 2,
+                    borderColor: "blue",
+                  }
+                : {},
+            ]}
+          >
+            {/* <View
               style={[
                 globalStyles.row_flexEnd,
                 globalStyles.item_status_text_1_parent,
@@ -425,7 +440,7 @@ export const ToDoItem = ({
                   )}
                 </>
               )}
-            </View>
+            </View> */}
 
             <View
               style={[
@@ -448,18 +463,23 @@ export const ToDoItem = ({
                 </Text>
               </View>
             </View>
+
             {screenMode.value === "edit" && (
-              <View
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderWidth: 2,
-                  borderColor: "blue",
-                  borderRadius: 70,
-                }}
-              >
-                {/* <Text>.</Text> */}
-              </View>
+              <>
+                {/* <View
+                  style={[
+                    { width: 20, height: 20, borderRadius: 70 },
+                    screenMode.selectedItemsID.indexOf(item?.id) !== -1
+                      ? {
+                          backgroundColor: "blue",
+                        }
+                      : {
+                          borderWidth: 2,
+                          borderColor: "blue",
+                        },
+                  ]}
+                ></View> */}
+              </>
             )}
           </View>
         </View>

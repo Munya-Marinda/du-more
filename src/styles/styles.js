@@ -8,12 +8,13 @@ const _cardWidth = windowWidth * 0.95;
 export const globalStyles = StyleSheet.create({
   homePage_top_parent_1: {
     display: "flex",
+    width: windowWidth,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 15,
-    paddingVertical: 5,
     marginBottom: 20,
-    backgroundColor: "transparent",
+    // paddingVertical: 5,
+    // backgroundColor: "green",
     justifyContent: "space-between",
   },
   homePage_top_header_1: {
@@ -23,7 +24,7 @@ export const globalStyles = StyleSheet.create({
   },
   homePage_items_scrollView_1: {
     width: windowWidth,
-    // backgroundColor: "black",
+    // backgroundColor: "green",
   },
   homePage_search_button: {
     // position: "absolute",
@@ -283,12 +284,34 @@ export const globalStyles = StyleSheet.create({
   //
   //
   //
-  // TAB DROPDOWN
+  // TAB Burger Menu
   burgerMenuButton: {
     fontSize: 14,
-    paddingVertical: 20,
+    fontWeight: "bold",
+    paddingVertical: 10,
     paddingHorizontal: 20,
-    width: windowWidth,
+    width: windowWidth * 0.8,
+  },
+  edit_options_pills: {
+    paddingVertical: 5,
+    fontWeight: "bold",
+    fontSize: 10,
+    color: "white",
+    marginLeft: 5,
+    borderRadius: 80,
+    borderColor: "gray",
+    paddingHorizontal: 9,
+    backgroundColor: "gray",
+  },
+  tab_control_buttons: {
+    paddingVertical: 5,
+    fontWeight: "bold",
+    fontSize: 9,
+    marginHorizontal: 5,
+    borderRadius: 5,
+    borderColor: "silver",
+    borderWidth: 1,
+    paddingHorizontal: 9,
   },
   //
   //
