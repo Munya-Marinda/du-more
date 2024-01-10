@@ -689,7 +689,7 @@ export const HomePage = () => {
             <Pressable
               onPress={() => {
                 setShowBurgerMenu(false);
-                handleScreenMode("edit");
+                setModalVisible(true);
               }}
               style={{
                 display: "flex",
@@ -1533,7 +1533,7 @@ export const HomePage = () => {
                             ToastAndroid.LONG,
                             1000
                           );
-                          setDevMode(true); 
+                          setDevMode(true);
                         },
                       },
                     ]
