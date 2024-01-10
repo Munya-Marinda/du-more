@@ -1533,8 +1533,7 @@ export const HomePage = () => {
                             ToastAndroid.LONG,
                             1000
                           );
-                          setDevMode(true);
-                          showBurgerMenu(true);
+                          setDevMode(true); 
                         },
                       },
                     ]
