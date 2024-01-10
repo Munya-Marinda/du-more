@@ -7,6 +7,7 @@ export const ToDoItemsByDate = ({
   getToDoItems,
   sortedByDate,
   screenMode,
+  asyncKey,
 }) => {
   //
   return (
@@ -44,7 +45,7 @@ export const ToDoItemsByDate = ({
                             key={index}
                             index={index}
                             screenMode={screenMode}
-                            asyncKey={"pendingItems"}
+                            asyncKey={asyncKey}
                             getToDoItems={getToDoItems}
                           />
                         );
@@ -93,7 +94,7 @@ export const ToDoItemsByDate = ({
                                 key={index}
                                 index={index}
                                 screenMode={screenMode}
-                                asyncKey={"pendingItems"}
+                                asyncKey={asyncKey}
                                 getToDoItems={getToDoItems}
                               />
                             );

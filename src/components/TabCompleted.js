@@ -16,6 +16,7 @@ export const TabCompleted = ({
         screenMode={screenMode}
         getToDoItems={getToDoItems}
         sortedByDate={sortedByDate}
+        asyncKey={"completedItems"}
       />
     </ScrollView>
   );

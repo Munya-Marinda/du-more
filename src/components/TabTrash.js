@@ -11,6 +11,7 @@ export const TabTrash = ({ items, getToDoItems, sortedByDate, screenMode }) => {
         screenMode={screenMode}
         getToDoItems={getToDoItems}
         sortedByDate={sortedByDate}
+        asyncKey={"trashedItems"}
       />
     </ScrollView>
   );

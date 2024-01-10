@@ -4,7 +4,6 @@ import {
   Modal,
   TextInput,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   Pressable,
   Dimensions,
@@ -20,7 +19,6 @@ import { TabCompleted } from "../components/TabCompleted";
 import { TabTrash } from "../components/TabTrash";
 import { TabPending } from "../components/TabPending";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Dropdown } from "react-native-element-dropdown";
 import { ToDoItem } from "../components/ToDoItem";
 import {
   DEV_TEST_DATA_COMPLETED,

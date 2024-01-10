@@ -16,6 +16,7 @@ export const TabPending = ({
         screenMode={screenMode}
         getToDoItems={getToDoItems}
         sortedByDate={sortedByDate}
+        asyncKey={"pendingItems"}
       />
     </ScrollView>
   );

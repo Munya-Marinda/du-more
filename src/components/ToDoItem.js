@@ -7,8 +7,7 @@ import {
   TextInput,
   Dimensions,
 } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { globalStyles } from "../styles/styles";
 import { formatDate } from "../js/main";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -18,13 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-export const ToDoItem = ({
-  item,
-  index,
-  asyncKey,
-  screenMode,
-  getToDoItems,
-}) => {
+export const ToDoItem = ({ item, asyncKey, screenMode, getToDoItems }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   //
@@ -392,56 +385,6 @@ export const ToDoItem = ({
                 : {},
             ]}
           >
-            {/* <View
-              style={[
-                globalStyles.row_flexEnd,
-                globalStyles.item_status_text_1_parent,
-              ]}
-            >
-              {!item.status ? (
-                "no status"
-              ) : (
-                <>
-                  {item.status === "completed" && (
-                    <>
-                      <Text
-                        style={[
-                          globalStyles.item_status_text_1,
-                          { color: "green" },
-                        ]}
-                      >
-                        {item.status ? item.status : "no status"}
-                      </Text>
-                    </>
-                  )}
-                  {item.status === "pending" && (
-                    <>
-                      <Text
-                        style={[
-                          globalStyles.item_status_text_1,
-                          { color: "orange" },
-                        ]}
-                      >
-                        {item.status ? item.status : "no status"}
-                      </Text>
-                    </>
-                  )}
-                  {item.status === "trash" && (
-                    <>
-                      <Text
-                        style={[
-                          globalStyles.item_status_text_1,
-                          { color: "red" },
-                        ]}
-                      >
-                        {item.status ? item.status : "no status"}
-                      </Text>
-                    </>
-                  )}
-                </>
-              )}
-            </View> */}
-
             <View
               style={[
                 globalStyles.item_flag_1,
