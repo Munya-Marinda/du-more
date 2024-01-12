@@ -1161,7 +1161,7 @@ export const HomePage = () => {
             }}
           >
             <WebView
-            automaticallyAdjustContentInsets={true}
+              automaticallyAdjustContentInsets={true}
               source={{
                 uri: "https://munya-dev.vercel.app/privacy-policy/app/du-more",
                 // uri: "https://munya-dev.vercel.app/",
