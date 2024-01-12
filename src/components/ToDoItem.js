@@ -114,8 +114,6 @@ export const ToDoItem = ({ item, asyncKey, screenMode, getToDoItems }) => {
         });
       }
     } catch (e) {}
-    // getToDoItems();
-    // setModalVisible(false);
   };
   //
   //

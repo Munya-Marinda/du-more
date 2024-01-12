@@ -29,7 +29,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "Beach Day",
     note: "Plan a day trip to the beach for relaxation and fun.",
-    date: "2023-07-10T09:30:00",
+    date: "2024-07-10T09:30:00",
   },
   {
     id: "1",
@@ -37,7 +37,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "Outdoor Barbecue",
     note: "Host a barbecue party with friends and family in the backyard.",
-    date: "2023-07-20T16:00:00",
+    date: "2024-07-20T16:00:00",
   },
   {
     id: "2",
@@ -45,7 +45,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "Learn a New Skill",
     note: "Start learning a new skill or hobby during free time.",
-    date: "2023-07-29T13:45:00",
+    date: "2024-07-29T13:45:00",
   },
   {
     id: "3",
@@ -53,7 +53,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "Plan a Picnic",
     note: "Organize a picnic in the local park with friends.",
-    date: "2023-08-08T12:00:00",
+    date: "2024-08-08T12:00:00",
   },
   {
     id: "4",
@@ -61,7 +61,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "DIY Craft Projects",
     note: "Engage in creative DIY craft projects at home.",
-    date: "2023-08-18T14:30:00",
+    date: "2024-08-18T14:30:00",
   },
   {
     id: "5",
@@ -69,7 +69,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "Virtual Book Club",
     note: "Start or join a virtual book club for literary discussions.",
-    date: "2023-08-27T17:15:00",
+    date: "2024-08-27T17:15:00",
   },
   {
     id: "6",
@@ -77,7 +77,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "Fall Cleaning",
     note: "Prepare the home for the fall season with a thorough cleaning.",
-    date: "2023-09-05T10:30:00",
+    date: "2024-09-05T10:30:00",
   },
   {
     id: "7",
@@ -85,7 +85,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "Explore Local Trails",
     note: "Take scenic walks and explore local trails for outdoor exercise.",
-    date: "2023-09-15T15:00:00",
+    date: "2024-09-15T15:00:00",
   },
   {
     id: "8",
@@ -93,7 +93,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     status: "completed",
     title: "Backyard Bonfire Night",
     note: "Host a cozy bonfire night in the backyard with friends.",
-    date: "2023-09-28T19:45:00",
+    date: "2024-09-28T19:45:00",
   },
 ];
 
@@ -104,7 +104,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Clean the Garage",
     note: "Garage cleaning and organizing task.",
-    date: "2023-01-10T09:30:00",
+    date: "2024-01-10T09:30:00",
   },
   {
     id: "10",
@@ -112,7 +112,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Organize Living Room",
     note: "Arrange furniture and clean the living room.",
-    date: "2023-01-15T14:00:00",
+    date: "2024-01-15T14:00:00",
   },
   {
     id: "11",
@@ -120,7 +120,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Home Office Setup",
     note: "Set up a comfortable home office space.",
-    date: "2023-01-28T11:00:00",
+    date: "2024-01-28T11:00:00",
   },
   {
     id: "12",
@@ -128,7 +128,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Deep Clean Kitchen",
     note: "Thoroughly clean and organize the kitchen.",
-    date: "2023-02-05T10:45:00",
+    date: "2024-02-05T10:45:00",
   },
   {
     id: "13",
@@ -136,7 +136,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Plant Indoor Garden",
     note: "Add indoor plants to enhance the home environment.",
-    date: "2023-02-18T13:30:00",
+    date: "2024-02-18T13:30:00",
   },
   {
     id: "14",
@@ -144,7 +144,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Home Workout Routine",
     note: "Establish a consistent home workout routine.",
-    date: "2023-02-25T15:15:00",
+    date: "2024-02-25T15:15:00",
   },
   {
     id: "15",
@@ -152,7 +152,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Organize Bookshelf",
     note: "Arrange books and declutter the bookshelf.",
-    date: "2023-03-08T12:00:00",
+    date: "2024-03-08T12:00:00",
   },
   {
     id: "16",
@@ -160,7 +160,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Spring Cleaning",
     note: "Deep clean and refresh the entire house for spring.",
-    date: "2023-03-20T09:30:00",
+    date: "2024-03-20T09:30:00",
   },
   {
     id: "17",
@@ -168,7 +168,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Digital Detox Day",
     note: "Take a day off from screens and enjoy offline activities.",
-    date: "2023-03-29T14:45:00",
+    date: "2024-03-29T14:45:00",
   },
   {
     id: "18",
@@ -176,7 +176,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Outdoor Cleanup",
     note: "Clean up the backyard and prepare for outdoor activities.",
-    date: "2023-04-12T11:00:00",
+    date: "2024-04-12T11:00:00",
   },
   {
     id: "19",
@@ -184,7 +184,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Home Painting Project",
     note: "Start a painting project to refresh the home's interior.",
-    date: "2023-04-22T14:30:00",
+    date: "2024-04-22T14:30:00",
   },
   {
     id: "20",
@@ -192,7 +192,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Explore New Recipes",
     note: "Try cooking new recipes and explore different cuisines.",
-    date: "2023-04-29T12:15:00",
+    date: "2024-04-29T12:15:00",
   },
   {
     id: "21",
@@ -200,7 +200,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Gardening Day",
     note: "Plant flowers and vegetables in the garden.",
-    date: "2023-05-08T10:00:00",
+    date: "2024-05-08T10:00:00",
   },
   {
     id: "22",
@@ -208,7 +208,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "DIY Home Decor",
     note: "Create handmade decorations to personalize the home.",
-    date: "2023-05-18T13:45:00",
+    date: "2024-05-18T13:45:00",
   },
   {
     id: "23",
@@ -216,7 +216,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Virtual Home Tour",
     note: "Organize a virtual home tour with friends and family.",
-    date: "2023-05-29T15:30:00",
+    date: "2024-05-29T15:30:00",
   },
   {
     id: "24",
@@ -224,7 +224,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Family Movie Night",
     note: "Set up a cozy movie night with family at home.",
-    date: "2023-06-06T18:00:00",
+    date: "2024-06-06T18:00:00",
   },
   {
     id: "25",
@@ -232,7 +232,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Organize Digital Files",
     note: "Sort and organize digital files on the computer.",
-    date: "2023-06-15T11:30:00",
+    date: "2024-06-15T11:30:00",
   },
   {
     id: "26",
@@ -240,7 +240,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Summer Cleaning",
     note: "Deep clean and declutter for a fresh start to summer.",
-    date: "2023-06-28T14:45:00",
+    date: "2024-06-28T14:45:00",
   },
   {
     id: "27",
@@ -248,7 +248,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Beach Day | 27 NEW!",
     note: "Plan a day trip to the beach for relaxation and fun.",
-    date: "2023-07-10T09:30:00",
+    date: "2024-07-10T09:30:00",
   },
   {
     id: "28",
@@ -256,7 +256,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Outdoor Barbecue | 28 NEW!",
     note: "Host a barbecue party with friends and family in the backyard.",
-    date: "2023-07-20T16:00:00",
+    date: "2024-07-20T16:00:00",
   },
   {
     id: "29",
@@ -264,7 +264,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Learn a New Skill | 29 NEW!",
     note: "Start learning a new skill or hobby during free time.",
-    date: "2023-07-29T13:45:00",
+    date: "2024-07-29T13:45:00",
   },
   {
     id: "30",
@@ -272,7 +272,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Plan a Picnic | 30 NEW!",
     note: "Organize a picnic in the local park with friends.",
-    date: "2023-08-08T12:00:00",
+    date: "2024-08-08T12:00:00",
   },
   {
     id: "31",
@@ -280,7 +280,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "DIY Craft Projects | 31 NEW!",
     note: "Engage in creative DIY craft projects at home.",
-    date: "2023-08-18T14:30:00",
+    date: "2024-08-18T14:30:00",
   },
   {
     id: "32",
@@ -288,7 +288,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Virtual Book Club | 32 NEW!",
     note: "Start or join a virtual book club for literary discussions.",
-    date: "2023-08-27T17:15:00",
+    date: "2024-08-27T17:15:00",
   },
   {
     id: "33",
@@ -296,7 +296,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Fall Cleaning | 33 NEW!",
     note: "Prepare the home for the fall season with a thorough cleaning.",
-    date: "2023-09-05T10:30:00",
+    date: "2024-09-05T10:30:00",
   },
   {
     id: "34",
@@ -304,7 +304,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Explore Local Trails | 34 NEW!",
     note: "Take scenic walks and explore local trails for outdoor exercise.",
-    date: "2023-09-15T15:00:00",
+    date: "2024-09-15T15:00:00",
   },
   {
     id: "35",
@@ -312,7 +312,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Backyard Bonfire Night | 35 NEW!",
     note: "Host a cozy bonfire night in the backyard with friends.",
-    date: "2023-09-28T19:45:00",
+    date: "2024-09-28T19:45:00",
   },
   {
     id: "36",
@@ -320,7 +320,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Pumpkin Carving",
     note: "Engage in pumpkin carving activities for Halloween decorations.",
-    date: "2023-10-10T14:00:00",
+    date: "2024-10-10T14:00:00",
   },
   {
     id: "37",
@@ -328,7 +328,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Home Movie Night",
     note: "Create a cozy home movie night with favorite films and snacks.",
-    date: "2023-10-22T19:30:00",
+    date: "2024-10-22T19:30:00",
   },
   {
     id: "38",
@@ -336,7 +336,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Try a New Recipe",
     note: "Experiment with cooking by trying out a new recipe for dinner.",
-    date: "2023-10-30T18:15:00",
+    date: "2024-10-30T18:15:00",
   },
   {
     id: "39",
@@ -344,7 +344,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Thanksgiving Prep",
     note: "Prepare for Thanksgiving by planning the menu and decorations.",
-    date: "2023-11-10T12:45:00",
+    date: "2024-11-10T12:45:00",
   },
   {
     id: "40",
@@ -352,7 +352,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Nature Walk",
     note: "Take a leisurely nature walk to enjoy the fall foliage.",
-    date: "2023-11-18T15:30:00",
+    date: "2024-11-18T15:30:00",
   },
   {
     id: "41",
@@ -360,7 +360,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Gratitude Journaling",
     note: "Start a gratitude journal to reflect on daily blessings.",
-    date: "2023-11-27T21:00:00",
+    date: "2024-11-27T21:00:00",
   },
   {
     id: "42",
@@ -368,7 +368,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Holiday Decorations",
     note: "Decorate the home with festive holiday decorations and lights.",
-    date: "2023-12-05T17:00:00",
+    date: "2024-12-05T17:00:00",
   },
   {
     id: "43",
@@ -376,7 +376,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Virtual Holiday Party",
     note: "Host a virtual holiday party for friends and family.",
-    date: "2023-12-18T20:15:00",
+    date: "2024-12-18T20:15:00",
   },
   {
     id: "44",
@@ -384,7 +384,7 @@ export const DEV_TEST_DATA_PENDING = [
     status: "pending",
     title: "Year-End Reflection",
     note: "Reflect on the achievements and experiences of the year.",
-    date: "2023-12-31T23:59:59",
+    date: "2024-12-31T23:59:59",
   },
 ];
 
@@ -395,7 +395,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Home Painting Project | 45 NEW!",
     note: "Start a painting project to refresh the home's interior.",
-    date: "2023-04-22T14:30:00",
+    date: "2024-04-22T14:30:00",
   },
   {
     id: "46",
@@ -403,7 +403,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Explore New Recipes | 46 NEW!",
     note: "Try cooking new recipes and explore different cuisines.",
-    date: "2023-04-29T12:15:00",
+    date: "2024-04-29T12:15:00",
   },
   {
     id: "47",
@@ -411,7 +411,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Gardening Day | 47 NEW!",
     note: "Plant flowers and vegetables in the garden.",
-    date: "2023-05-08T10:00:00",
+    date: "2024-05-08T10:00:00",
   },
   {
     id: "48",
@@ -419,7 +419,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "DIY Home Decor | 48 NEW!",
     note: "Create handmade decorations to personalize the home.",
-    date: "2023-05-18T13:45:00",
+    date: "2024-05-18T13:45:00",
   },
   {
     id: "49",
@@ -427,7 +427,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Virtual Home Tour | 49 NEW!",
     note: "Organize a virtual home tour with friends and family.",
-    date: "2023-05-29T15:30:00",
+    date: "2024-05-29T15:30:00",
   },
   {
     id: "50",
@@ -435,7 +435,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Family Movie Night | 50 NEW!",
     note: "Set up a cozy movie night with family at home.",
-    date: "2023-06-06T18:00:00",
+    date: "2024-06-06T18:00:00",
   },
   {
     id: "51",
@@ -443,7 +443,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Organize Digital Files | 51 NEW!",
     note: "Sort and organize digital files on the computer.",
-    date: "2023-06-15T11:30:00",
+    date: "2024-06-15T11:30:00",
   },
   {
     id: "52",
@@ -451,7 +451,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Summer Cleaning | 52 NEW!",
     note: "Deep clean and declutter for a fresh start to summer.",
-    date: "2023-06-28T14:45:00",
+    date: "2024-06-28T14:45:00",
   },
   {
     id: "53",
@@ -459,7 +459,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Beach Day | 53 NEW!",
     note: "Plan a day trip to the beach for relaxation and fun.",
-    date: "2023-07-10T09:30:00",
+    date: "2024-07-10T09:30:00",
   },
   {
     id: "54",
@@ -467,7 +467,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Virtual Book Club | 54 NEW!",
     note: "Start or join a virtual book club for literary discussions.",
-    date: "2023-08-27T17:15:00",
+    date: "2024-08-27T17:15:00",
   },
   {
     id: "55",
@@ -475,7 +475,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Fall Cleaning | 55 NEW!",
     note: "Prepare the home for the fall season with a thorough cleaning.",
-    date: "2023-09-05T10:30:00",
+    date: "2024-09-05T10:30:00",
   },
   {
     id: "56",
@@ -483,7 +483,7 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Explore Local Trails | 56 NEW!",
     note: "Take scenic walks and explore local trails for outdoor exercise.",
-    date: "2023-09-15T15:00:00",
+    date: "2024-09-15T15:00:00",
   },
   {
     id: "57",
@@ -491,6 +491,6 @@ export const DEV_TEST_DATA_TRASH = [
     status: "trash",
     title: "Backyard Bonfire Night | 57 NEW!",
     note: "Host a cozy bonfire night in the backyard with friends.",
-    date: "2023-09-28T19:45:00",
+    date: "2024-09-28T19:45:00",
   },
 ];

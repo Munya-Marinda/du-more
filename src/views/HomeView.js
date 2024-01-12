@@ -9,7 +9,11 @@ import {
   Dimensions,
   Alert,
   ToastAndroid,
+  Linking,
+  Share,
+  Image,
 } from "react-native";
+import * as Device from "expo-device";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { StatusBar } from "expo-status-bar";
@@ -25,6 +29,7 @@ import {
   DEV_TEST_DATA_PENDING,
   DEV_TEST_DATA_TRASH,
 } from "../js/main";
+import WebView from "react-native-webview";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -63,6 +68,7 @@ export const HomePage = () => {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
   const [devMode, setDevMode] = useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   //
   const [singleItemData, setSingleItemData] = useState(initialItemState);
 
@@ -82,7 +88,6 @@ export const HomePage = () => {
     "teal",
     "maroon",
   ];
-
   //
   //
   //
@@ -128,10 +133,10 @@ export const HomePage = () => {
 
   const generateUniqueID = () => {
     const now = new Date();
-    const year = now.getFullYear(); // Get the current year (e.g., 2023)
-    const month = now.getMonth() + 1; // Get the current month (0-11, so add 1 to get 1-12)
-    const day = now.getDate(); // Get the current day of the month (1-31)
-    const timestamp = now.getTime(); // Get the current timestamp
+    const year = now.getFullYear(); //
+    const month = now.getMonth() + 1; //
+    const day = now.getDate(); //
+    const timestamp = now.getTime(); //
 
     return `id-${year}-${month}-${day}-${timestamp}`;
   };
@@ -492,6 +497,21 @@ export const HomePage = () => {
     setModalVisible(false);
   };
 
+  const openWebLink = (link) => {
+    Linking.openURL(link).catch((error) =>
+      console.error("Error opening link:", error)
+    );
+  };
+
+  const openEmailApp = (toEmail, subject, body) => {
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    const url = `mailto:${toEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+    Linking.openURL(url).catch((error) =>
+      console.error("Error opening email app:", error)
+    );
+  };
+
   const dev_addToDoItems = async () => {
     try {
       await AsyncStorage.setItem(
@@ -586,6 +606,7 @@ export const HomePage = () => {
   //
   return (
     <View style={{ position: "relative" }}>
+      {/* ADD NEW TASK ICON */}
       {screenMode.value !== "edit" && (
         <TouchableOpacity
           style={{ position: "absolute", bottom: 30, right: 30, zIndex: 999 }}
@@ -622,270 +643,562 @@ export const HomePage = () => {
             backgroundColor: "rgba(0,0,0,0.8)",
           }}
         >
-          <View
+          <ScrollView
             style={{
-              width: windowWidth * 0.8,
+              width: windowWidth * 0.9,
+              maxHeight: windowHeight * 0.8,
               backgroundColor: "white",
             }}
           >
-            <Text
-              style={[
-                {
-                  fontSize: 12,
-                  paddingVertical: 5,
-                  paddingHorizontal: 20,
-                  backgroundColor: "#e1e1e1",
-                },
-              ]}
-            >
-              Filter
-            </Text>
-            <Pressable
-              onPress={() => {
-                setShowBurgerMenu(false);
-                setSortedByDate(!sortedByDate);
-              }}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "flex-start",
-              }}
-            >
-              {({ pressed }) => (
-                <Text
-                  style={[
-                    {
-                      opacity: pressed ? 0.5 : 1,
-                      backgroundColor: "white",
-                      borderTopColor: "gray",
-                      borderTopWidth: 1,
-                    },
-                    globalStyles.burgerMenuButton,
-                  ]}
-                >
-                  <Ionicons
-                    name={sortedByDate ? "arrow-up" : "arrow-down"}
-                    size={20}
-                    color="black"
-                  />
-                  {"  "} Sort By Date
-                </Text>
-              )}
-            </Pressable>
-
-            <Text
-              style={[
-                {
-                  fontSize: 12,
-                  paddingVertical: 5,
-                  paddingHorizontal: 20,
-                  backgroundColor: "#e1e1e1",
-                },
-              ]}
-            >
-              Actions
-            </Text>
-            <Pressable
-              onPress={() => {
-                setShowBurgerMenu(false);
-                setModalVisible(true);
-              }}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "flex-start",
-              }}
-            >
-              {({ pressed }) => (
-                <Text
-                  style={[
-                    {
-                      opacity: pressed ? 0.5 : 1,
-                      backgroundColor: "white",
-                      borderTopColor: "gray",
-                      borderTopWidth: 1,
-                    },
-                    globalStyles.burgerMenuButton,
-                  ]}
-                >
-                  <Ionicons name={"add"} size={20} color="black" />
-                  {"  "} Add New Task
-                </Text>
-              )}
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                searchItems("");
-                setSearchTerm("");
-                setShowBurgerMenu(false);
-                setSearchModalVisible(true);
-              }}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "flex-start",
-              }}
-            >
-              {({ pressed }) => (
-                <>
+            <>
+              {/* FILTER */}
+              <Text
+                style={[
+                  {
+                    fontSize: 12,
+                    paddingVertical: 5,
+                    paddingHorizontal: 20,
+                    backgroundColor: "#e1e1e1",
+                  },
+                ]}
+              >
+                Filter
+              </Text>
+              <Pressable
+                onPress={() => {
+                  setShowBurgerMenu(false);
+                  setSortedByDate(!sortedByDate);
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
                   <Text
                     style={[
                       {
                         opacity: pressed ? 0.5 : 1,
-                        backgroundColor: "white",
-                        borderTopColor: "gray",
-                        borderTopWidth: 1,
                       },
                       globalStyles.burgerMenuButton,
                     ]}
                   >
-                    <Ionicons name="search" size={20} color="black" />
-                    {"  "} Search Tasks
+                    <Ionicons
+                      name={sortedByDate ? "arrow-up" : "arrow-down"}
+                      size={20}
+                      color="black"
+                    />
+                    {"  "} Sort By Date
                   </Text>
-                </>
-              )}
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                setShowBurgerMenu(false);
-                handleScreenMode("edit");
-              }}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "flex-start",
-              }}
-            >
-              {({ pressed }) => (
-                <>
+                )}
+              </Pressable>
+
+              {/* ACTIONS */}
+              <Text
+                style={[
+                  {
+                    fontSize: 12,
+                    paddingVertical: 5,
+                    paddingHorizontal: 20,
+                    backgroundColor: "#e1e1e1",
+                  },
+                ]}
+              >
+                Actions
+              </Text>
+              <Pressable
+                onPress={() => {
+                  setShowBurgerMenu(false);
+                  setModalVisible(true);
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
                   <Text
                     style={[
                       {
                         opacity: pressed ? 0.5 : 1,
-                        backgroundColor: "white",
-                        borderTopColor: "gray",
-                        borderTopWidth: 1,
                       },
                       globalStyles.burgerMenuButton,
                     ]}
                   >
-                    <Ionicons name={"pencil-sharp"} size={20} color="black" />
-                    {"  "} Edit Tasks
+                    <Ionicons name={"add"} size={20} color="black" />
+                    {"  "} Add New Task
                   </Text>
-                </>
-              )}
-            </Pressable>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  searchItems("");
+                  setSearchTerm("");
+                  setShowBurgerMenu(false);
+                  setSearchModalVisible(true);
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <>
+                    <Text
+                      style={[
+                        {
+                          opacity: pressed ? 0.5 : 1,
+                          backgroundColor: "white",
+                          borderTopColor: "gray",
+                          borderTopWidth: 1,
+                        },
+                        globalStyles.burgerMenuButton,
+                      ]}
+                    >
+                      <Ionicons name="search" size={20} color="black" />
+                      {"  "} Search Tasks
+                    </Text>
+                  </>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setShowBurgerMenu(false);
+                  handleScreenMode("edit");
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <>
+                    <Text
+                      style={[
+                        {
+                          opacity: pressed ? 0.5 : 1,
+                          backgroundColor: "white",
+                          borderTopColor: "gray",
+                          borderTopWidth: 1,
+                        },
+                        globalStyles.burgerMenuButton,
+                      ]}
+                    >
+                      <Ionicons name={"pencil-sharp"} size={20} color="black" />
+                      {"  "} Edit Tasks
+                    </Text>
+                  </>
+                )}
+              </Pressable>
 
-            {devMode && (
-              <>
-                <Text
-                  style={[
-                    {
-                      fontSize: 12,
-                      paddingVertical: 5,
+              {/* ABOUT */}
+              <Text
+                style={[
+                  {
+                    fontSize: 12,
+                    paddingVertical: 5,
+                    paddingHorizontal: 20,
+                    backgroundColor: "#e1e1e1",
+                  },
+                ]}
+              >
+                About
+              </Text>
+              <Pressable
+                onPress={() => {
+                  // setShowBurgerMenu(false);
+                  const shareApp = async () => {
+                    try {
+                      const result = await Share.share({
+                        message:
+                          "Hey.\nCheck out this cool To Do app called *Du-More*. It has increased my productivity ALOT! 💯.\n\nhttps://play.google.com/store/apps/details?id=com.munya_m.dumore",
+                      });
+                      if (result.action === Share.sharedAction) {
+                        if (result.activityType) {
+                          // shared with activity type of result.activityType
+                        } else {
+                          // shared
+                        }
+                      } else if (result.action === Share.dismissedAction) {
+                        // dismissed
+                      }
+                    } catch (error) {
+                      Alert.alert(error.message);
+                    }
+                  };
+                  shareApp();
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      {
+                        opacity: pressed ? 0.5 : 1,
+                      },
+                      globalStyles.burgerMenuButton,
+                    ]}
+                  >
+                    <Ionicons name={"share-social"} size={20} color="black" />
+                    {"  "} Share with friends
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  // setShowBurgerMenu(false);
+                  const link =
+                    Device.brand.toUpperCase() === "huawei"
+                      ? "https://play.google.com/store/apps/details?id=com.munya_m.dumore"
+                      : "https://play.google.com/store/apps/details?id=com.munya_m.dumore";
+                  openWebLink(link);
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      {
+                        opacity: pressed ? 0.5 : 1,
+                      },
+                      globalStyles.burgerMenuButton,
+                    ]}
+                  >
+                    <Ionicons name={"star"} size={20} color="black" />
+                    {"  "} Rate App
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  // setShowBurgerMenu(false);
+                  openEmailApp(
+                    "munyathedev@gmail.com",
+                    "DuMore App - User Feedback",
+                    "\n\n\n\n\n\n\n- BRAND: " +
+                      Device.brand +
+                      "\n- DESIGNNAME: " +
+                      Device.designName +
+                      "\n- DEVICENAME: " +
+                      Device.deviceName +
+                      "\n- DEVICETYPE: " +
+                      Device.deviceType +
+                      "\n- DEVICEYEARCLASS: " +
+                      Device.deviceYearClass +
+                      "\n- ISDEVICE: " +
+                      Device.isDevice +
+                      "\n- MANUFACTURER: " +
+                      Device.manufacturer +
+                      "\n- MODELID: " +
+                      Device.modelId
+                  );
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      {
+                        opacity: pressed ? 0.5 : 1,
+                      },
+                      globalStyles.burgerMenuButton,
+                    ]}
+                  >
+                    <Ionicons name={"mail-open"} size={20} color="black" />
+                    {"  "} Feedback
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setShowBurgerMenu(false);
+                  setShowPrivacyPolicy(true);
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      {
+                        opacity: pressed ? 0.5 : 1,
+                      },
+                      globalStyles.burgerMenuButton,
+                    ]}
+                  >
+                    <Ionicons name={"eye"} size={20} color="black" />
+                    {"  "} Privacy Policy
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  openWebLink(
+                    "https://play.google.com/store/apps/dev?id=9171087412603231862"
+                  );
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <View
+                    style={{
+                      opacity: pressed ? 0.5 : 1,
+                      paddingVertical: 30,
                       paddingHorizontal: 20,
-                      backgroundColor: "#ba0000",
-                      color: "white",
-                    },
-                  ]}
-                >
-                  Developer
-                </Text>
-                <Pressable
-                  onPress={() => {
-                    setShowBurgerMenu(false);
-                    dev_addToDoItems();
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={[
-                        {
-                          opacity: pressed ? 0.5 : 1,
-                          backgroundColor: "#ffa1a1",
-                        },
-                        globalStyles.burgerMenuButton,
-                      ]}
-                    >
-                      <Ionicons name={"skull"} size={20} color="black" />
-                      {"  "} Create Test Data
-                    </Text>
-                  )}
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setShowBurgerMenu(false);
-                    dev_deleteToDoItems();
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={[
-                        {
-                          opacity: pressed ? 0.5 : 1,
-                          backgroundColor: "#ffa1a1",
-                        },
-                        globalStyles.burgerMenuButton,
-                      ]}
-                    >
-                      <Ionicons name={"skull"} size={20} color="black" />
-                      {"  "} Delete All Data
-                    </Text>
-                  )}
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setDevMode(false);
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={[
-                        {
-                          opacity: pressed ? 0.5 : 1,
-                          backgroundColor: "#ffa1a1",
-                        },
-                        globalStyles.burgerMenuButton,
-                      ]}
-                    >
-                      <Ionicons name={"skull"} size={20} color="black" />
-                      {"  "} Turn Off Dev Mode
-                    </Text>
-                  )}
-                </Pressable>
-              </>
+                      width: windowWidth * 0.9,
+                      backgroundColor: "white",
+                      borderBottomColor: "gray",
+                      borderBottomWidth: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: "row",
+                      justifyContent: "flex-start",
+                    }}
+                  >
+                    <Image
+                      source={require("../../assets/md-logo.png")}
+                      style={{
+                        width: 35,
+                        height: 35,
+                        marginRight: 10,
+                      }}
+                    />
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: "bold",
+                        }}
+                      >
+                        Download More Apps By{" "}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontWeight: "bold",
+                          color: "#0066a4",
+                        }}
+                      >
+                        MUNYA Dev
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </Pressable>
+
+              {devMode && (
+                <>
+                  <Text
+                    style={[
+                      {
+                        fontSize: 12,
+                        paddingVertical: 5,
+                        paddingHorizontal: 20,
+                        backgroundColor: "#ba0000",
+                        color: "white",
+                      },
+                    ]}
+                  >
+                    Developer
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      setShowBurgerMenu(false);
+                      dev_addToDoItems();
+                    }}
+                  >
+                    {({ pressed }) => (
+                      <Text
+                        style={[
+                          {
+                            opacity: pressed ? 0.5 : 1,
+                            backgroundColor: "#ffa1a1",
+                          },
+                          globalStyles.burgerMenuButton,
+                        ]}
+                      >
+                        <Ionicons name={"skull"} size={20} color="black" />
+                        {"  "} Create Test Data
+                      </Text>
+                    )}
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      setShowBurgerMenu(false);
+                      dev_deleteToDoItems();
+                    }}
+                  >
+                    {({ pressed }) => (
+                      <Text
+                        style={[
+                          {
+                            opacity: pressed ? 0.5 : 1,
+                            backgroundColor: "#ffa1a1",
+                          },
+                          globalStyles.burgerMenuButton,
+                        ]}
+                      >
+                        <Ionicons name={"skull"} size={20} color="black" />
+                        {"  "} Delete All Data
+                      </Text>
+                    )}
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      setDevMode(false);
+                    }}
+                  >
+                    {({ pressed }) => (
+                      <Text
+                        style={[
+                          {
+                            opacity: pressed ? 0.5 : 1,
+                            backgroundColor: "#ffa1a1",
+                          },
+                          globalStyles.burgerMenuButton,
+                        ]}
+                      >
+                        <Ionicons name={"skull"} size={20} color="black" />
+                        {"  "} Turn Off Dev Mode
+                      </Text>
+                    )}
+                  </Pressable>
+                </>
+              )}
+            </>
+          </ScrollView>
+
+          <Pressable
+            onPress={() => {
+              setShowBurgerMenu(false);
+            }}
+          >
+            {({ pressed }) => (
+              <Text
+                style={[
+                  {
+                    fontSize: 14,
+                    color: "white",
+                    fontWeight: "bold",
+                    paddingVertical: 15,
+                    textAlign: "center",
+                    paddingHorizontal: 20,
+                    backgroundColor: "gray",
+                    width: windowWidth * 0.9,
+                    opacity: pressed ? 0.5 : 1,
+                  },
+                ]}
+              >
+                CLOSE
+              </Text>
             )}
+          </Pressable>
+        </Pressable>
+      </Modal>
 
-            <Pressable
-              onPress={() => {
-                setShowBurgerMenu(false);
+      {/* PRIVACY POLICY MODAL */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showPrivacyPolicy}
+        onRequestClose={() => {
+          setShowPrivacyPolicy(false);
+        }}
+      >
+        <Pressable
+          onPress={() => {
+            // setShowPrivacyPolicy(false);
+          }}
+          style={{
+            display: "flex",
+            width: windowWidth,
+            height: windowHeight,
+            alignItems: "center",
+            flexDirection: "column",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.8)",
+          }}
+        >
+          <View
+            style={{
+              width: windowWidth * 0.9,
+              height: windowHeight * 0.85,
+              backgroundColor: "white",
+              borderColor: "white",
+              borderWidth: 2,
+            }}
+          >
+            <WebView
+              source={{
+                uri: "https://munya-dev.vercel.app/privacy-policy/app/du-more",
+                // uri: "https://munya-dev.vercel.app/",
               }}
-            >
-              {({ pressed }) => (
-                <Text
-                  style={[
-                    {
-                      fontSize: 14,
-                      color: "white",
-                      fontWeight: "bold",
-                      paddingVertical: 15,
-                      textAlign: "center",
-                      paddingHorizontal: 20,
-                      backgroundColor: "gray",
-                      width: windowWidth * 0.8,
-                      opacity: pressed ? 0.5 : 1,
-                    },
-                  ]}
-                >
-                  CLOSE
-                </Text>
-              )}
-            </Pressable>
+              style={{
+                width: windowWidth * 0.9,
+                height: windowHeight * 0.85,
+                borderColor: "yellow",
+                borderWidth: 2,
+              }}
+            />
           </View>
+
+          <Pressable
+            onPress={() => {
+              setShowPrivacyPolicy(false);
+            }}
+          >
+            {({ pressed }) => (
+              <Text
+                style={[
+                  {
+                    fontSize: 14,
+                    color: "white",
+                    fontWeight: "bold",
+                    paddingVertical: 15,
+                    textAlign: "center",
+                    paddingHorizontal: 20,
+                    backgroundColor: "gray",
+                    width: windowWidth * 0.9,
+                    opacity: pressed ? 0.5 : 1,
+                  },
+                ]}
+              >
+                CLOSE
+              </Text>
+            )}
+          </Pressable>
         </Pressable>
       </Modal>
 
@@ -1469,6 +1782,7 @@ export const HomePage = () => {
           </View>
         </>
       )}
+
       {/* TABS */}
       {activeTab === "PENDING" && (
         <TabPending
