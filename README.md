@@ -1,4 +1,4 @@
-# Du-More 📝 Version 2.0.0 Update!
+# Du-More 📝 Version 2.0.3 Update!
 
 ```React Native To-Do List App```
 
