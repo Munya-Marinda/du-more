@@ -290,7 +290,7 @@ export const globalStyles = StyleSheet.create({
     fontWeight: "bold",
     paddingVertical: 10,
     paddingHorizontal: 20,
-    width: windowWidth * 0.9,
+    width: windowWidth,
     backgroundColor: "white",
     borderBottomColor: "gray",
     borderBottomWidth: 1,

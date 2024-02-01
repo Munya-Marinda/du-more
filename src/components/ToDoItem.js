@@ -395,12 +395,16 @@ export const ToDoItem = ({ item, asyncKey, screenMode, getToDoItems }) => {
             <View style={globalStyles.item_info_parent_1}>
               <View style={globalStyles.item_title_text_1_parent}>
                 <Text style={globalStyles.item_title_text_1} numberOfLines={1}>
+                  {item.id ? item.id : "no id"}
+                </Text>
+                <Text style={globalStyles.item_title_text_1} numberOfLines={1}>
                   {item.title ? item.title : "no title"}
                 </Text>
               </View>
               <View style={globalStyles.item_date_text_1_parent}>
                 <Text style={globalStyles.item_date_text_1}>
-                  {item.date ? formatDate(item.date) : "no date"}
+                  {/* {item.date ? formatDate(item.date) : "no date"} */}
+                  {item.last_modified ? item.last_modified : "no date"}
                 </Text>
               </View>
             </View>

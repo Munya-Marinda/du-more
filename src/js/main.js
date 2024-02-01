@@ -1,3 +1,10 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert, Linking, ToastAndroid } from "react-native";
+import { decode as base64_decode, encode as base64_encode } from "base-64";
+
+const ip = "192.168.43.214";
+export const baseURL = `http://${ip}/munya-server/api/du-more/`;
+
 export function formatDate(inputDate) {
   const months = [
     "JANUARY",
@@ -22,475 +29,198 @@ export function formatDate(inputDate) {
   return `${day} ${month} ${year}`;
 }
 
-export const DEV_TEST_DATA_COMPLETED = [
-  {
-    id: "0",
-    flag: "green",
-    status: "completed",
-    title: "Beach Day",
-    note: "Plan a day trip to the beach for relaxation and fun.",
-    date: "2024-07-10T09:30:00",
-  },
-  {
-    id: "1",
-    flag: "pink",
-    status: "completed",
-    title: "Outdoor Barbecue",
-    note: "Host a barbecue party with friends and family in the backyard.",
-    date: "2024-07-20T16:00:00",
-  },
-  {
-    id: "2",
-    flag: "orange",
-    status: "completed",
-    title: "Learn a New Skill",
-    note: "Start learning a new skill or hobby during free time.",
-    date: "2024-07-29T13:45:00",
-  },
-  {
-    id: "3",
-    flag: "green",
-    status: "completed",
-    title: "Plan a Picnic",
-    note: "Organize a picnic in the local park with friends.",
-    date: "2024-08-08T12:00:00",
-  },
-  {
-    id: "4",
-    flag: "pink",
-    status: "completed",
-    title: "DIY Craft Projects",
-    note: "Engage in creative DIY craft projects at home.",
-    date: "2024-08-18T14:30:00",
-  },
-  {
-    id: "5",
-    flag: "orange",
-    status: "completed",
-    title: "Virtual Book Club",
-    note: "Start or join a virtual book club for literary discussions.",
-    date: "2024-08-27T17:15:00",
-  },
-  {
-    id: "6",
-    flag: "green",
-    status: "completed",
-    title: "Fall Cleaning",
-    note: "Prepare the home for the fall season with a thorough cleaning.",
-    date: "2024-09-05T10:30:00",
-  },
-  {
-    id: "7",
-    flag: "pink",
-    status: "completed",
-    title: "Explore Local Trails",
-    note: "Take scenic walks and explore local trails for outdoor exercise.",
-    date: "2024-09-15T15:00:00",
-  },
-  {
-    id: "8",
-    flag: "orange",
-    status: "completed",
-    title: "Backyard Bonfire Night",
-    note: "Host a cozy bonfire night in the backyard with friends.",
-    date: "2024-09-28T19:45:00",
-  },
-];
+export const saveUserData = async (data) => {
+  //
+  if (data === undefined || data === null || typeof data !== "object") {
+    Alert.alert(
+      "Invalid User",
+      "Failed to save login. Please try again later."
+    );
+    return;
+  }
+  //
+  try {
+    const jsonValue = JSON.stringify(data);
+    await AsyncStorage.setItem("user_data", jsonValue);
+    return;
+  } catch (e) {
+    if (data === undefined || data === null || typeof data !== "object") {
+      Alert.alert(
+        "Permission Denied",
+        "Failed to save login. Please try again later."
+      );
+      return;
+    }
+  }
+};
+
+export const clearUserData = async () => {
+  try {
+    await AsyncStorage.removeItem("user_data");
+    return;
+  } catch (e) {}
+};
+
+export const getUserCloudTasks = async (user, localdata) => {
+  try {
+    var formdata = new FormData();
+    formdata.append("tasks", JSON.stringify(localdata));
+
+    var requestOptions = {
+      method: "POST",
+      headers: createUserAuthHeaders(user),
+      body: formdata,
+      redirect: "follow",
+    };
+
+    const response = await fetch(`${baseURL}?gettasks=1`, requestOptions);
+    const result = await response.text();
+
+    if (typeof result === "string" && result?.length > 0) {
+      try {
+        ToastAndroid.show("... SYNCING TASKS ...", ToastAndroid.LONG, 1000);
+        return JSON.parse(result)?.value;
+      } catch (error) {
+        ToastAndroid.show("FAILED TO SYNC TASKS", ToastAndroid.LONG, 1000);
+        console.log("error", error);
+        return false;
+      }
+    } else {
+      return false;
+    }
+  } catch (error) {
+    ToastAndroid.show("FAILED TO SYNC TASKS", ToastAndroid.LONG, 1000);
+    console.log("error", error);
+    return false;
+  }
+};
+
+export const syncUserData = async (user, localdata) => {
+  try {
+    const base64 = base64_encode(`${user?.username}:${user?.session}`);
+
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", `Basic ${base64}`);
+
+    var formdata = new FormData();
+    formdata.append("syncuserdata", "1");
+    formdata.append("tasks", JSON.stringify(localdata));
+
+    var requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: formdata,
+      redirect: "follow",
+    };
+
+    // Add the return statement here
+    return fetch(baseURL, requestOptions)
+      .then((response) => response.text())
+      .then((result) => {
+        console.log("result 1", result);
+        console.log("result user 1", user);
+        try {
+          const resultObj = JSON.parse(result);
+          return resultObj.value.newUpdatedTasks;
+        } catch (error) {
+          console.log("error 0", error);
+          console.log("result 2", result);
+          return false;
+        }
+      })
+      .catch((error) => {
+        console.log("error 1", error);
+        return false;
+      });
+  } catch (error) {
+    console.log("error 2", error);
+    return false;
+  }
+};
+
+export const authenticateUser = async () => {
+  //
+  try {
+    const jsonValue = await AsyncStorage.getItem("user_data");
+    return jsonValue != null ? JSON.parse(jsonValue) : false;
+  } catch (e) {
+    return false;
+  }
+  //
+};
+
+const createUserAuthHeaders = (user) => {
+  var myHeaders = new Headers();
+  const base64 = base64_encode(`${user?.username}:${user?.session}`);
+  myHeaders.append("Authorization", `Basic ${base64}`);
+  return myHeaders;
+};
 
 export const DEV_TEST_DATA_PENDING = [
   {
-    id: "9",
+    id: "d1",
     flag: "green",
     status: "pending",
-    title: "Clean the Garage",
-    note: "Garage cleaning and organizing task.",
-    date: "2024-01-10T09:30:00",
+    title: "Task 1-2",
+    note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
+    date: "2024-01-01T08:06:37.051Z",
+    date_created: "2024-01-01T08:06:00.001Z",
+    last_modified: "2024-01-01T08:07:00.001Z",
   },
   {
-    id: "10",
-    flag: "pink",
+    id: "d4",
+    flag: "yellow",
     status: "pending",
-    title: "Organize Living Room",
-    note: "Arrange furniture and clean the living room.",
-    date: "2024-01-15T14:00:00",
+    title: "Task 1-2",
+    note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
+    date: "2024-01-01T08:06:37.051Z",
+    date_created: "2024-01-01T08:06:00.001Z",
+    last_modified: "2024-01-01T08:07:00.001Z",
   },
+];
+
+export const DEV_TEST_DATA_COMPLETED = [
   {
-    id: "11",
-    flag: "orange",
-    status: "pending",
-    title: "Home Office Setup",
-    note: "Set up a comfortable home office space.",
-    date: "2024-01-28T11:00:00",
-  },
-  {
-    id: "12",
+    id: "d2",
     flag: "green",
-    status: "pending",
-    title: "Deep Clean Kitchen",
-    note: "Thoroughly clean and organize the kitchen.",
-    date: "2024-02-05T10:45:00",
+    status: "completed",
+    title: "Task 2-2",
+    note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
+    date: "2024-01-01T08:06:37.051Z",
+    date_created: "2024-01-01T08:06:00.001Z",
+    last_modified: "2024-01-03T08:07:00.001Z",
   },
   {
-    id: "13",
-    flag: "pink",
-    status: "pending",
-    title: "Plant Indoor Garden",
-    note: "Add indoor plants to enhance the home environment.",
-    date: "2024-02-18T13:30:00",
-  },
-  {
-    id: "14",
-    flag: "orange",
-    status: "pending",
-    title: "Home Workout Routine",
-    note: "Establish a consistent home workout routine.",
-    date: "2024-02-25T15:15:00",
-  },
-  {
-    id: "15",
-    flag: "green",
-    status: "pending",
-    title: "Organize Bookshelf",
-    note: "Arrange books and declutter the bookshelf.",
-    date: "2024-03-08T12:00:00",
-  },
-  {
-    id: "16",
-    flag: "pink",
-    status: "pending",
-    title: "Spring Cleaning",
-    note: "Deep clean and refresh the entire house for spring.",
-    date: "2024-03-20T09:30:00",
-  },
-  {
-    id: "17",
-    flag: "orange",
-    status: "pending",
-    title: "Digital Detox Day",
-    note: "Take a day off from screens and enjoy offline activities.",
-    date: "2024-03-29T14:45:00",
-  },
-  {
-    id: "18",
-    flag: "green",
-    status: "pending",
-    title: "Outdoor Cleanup",
-    note: "Clean up the backyard and prepare for outdoor activities.",
-    date: "2024-04-12T11:00:00",
-  },
-  {
-    id: "19",
-    flag: "pink",
-    status: "pending",
-    title: "Home Painting Project",
-    note: "Start a painting project to refresh the home's interior.",
-    date: "2024-04-22T14:30:00",
-  },
-  {
-    id: "20",
-    flag: "orange",
-    status: "pending",
-    title: "Explore New Recipes",
-    note: "Try cooking new recipes and explore different cuisines.",
-    date: "2024-04-29T12:15:00",
-  },
-  {
-    id: "21",
-    flag: "green",
-    status: "pending",
-    title: "Gardening Day",
-    note: "Plant flowers and vegetables in the garden.",
-    date: "2024-05-08T10:00:00",
-  },
-  {
-    id: "22",
-    flag: "pink",
-    status: "pending",
-    title: "DIY Home Decor",
-    note: "Create handmade decorations to personalize the home.",
-    date: "2024-05-18T13:45:00",
-  },
-  {
-    id: "23",
-    flag: "orange",
-    status: "pending",
-    title: "Virtual Home Tour",
-    note: "Organize a virtual home tour with friends and family.",
-    date: "2024-05-29T15:30:00",
-  },
-  {
-    id: "24",
-    flag: "green",
-    status: "pending",
-    title: "Family Movie Night",
-    note: "Set up a cozy movie night with family at home.",
-    date: "2024-06-06T18:00:00",
-  },
-  {
-    id: "25",
-    flag: "pink",
-    status: "pending",
-    title: "Organize Digital Files",
-    note: "Sort and organize digital files on the computer.",
-    date: "2024-06-15T11:30:00",
-  },
-  {
-    id: "26",
-    flag: "orange",
-    status: "pending",
-    title: "Summer Cleaning",
-    note: "Deep clean and declutter for a fresh start to summer.",
-    date: "2024-06-28T14:45:00",
-  },
-  {
-    id: "27",
-    flag: "green",
-    status: "pending",
-    title: "Beach Day | 27 NEW!",
-    note: "Plan a day trip to the beach for relaxation and fun.",
-    date: "2024-07-10T09:30:00",
-  },
-  {
-    id: "28",
-    flag: "pink",
-    status: "pending",
-    title: "Outdoor Barbecue | 28 NEW!",
-    note: "Host a barbecue party with friends and family in the backyard.",
-    date: "2024-07-20T16:00:00",
-  },
-  {
-    id: "29",
-    flag: "orange",
-    status: "pending",
-    title: "Learn a New Skill | 29 NEW!",
-    note: "Start learning a new skill or hobby during free time.",
-    date: "2024-07-29T13:45:00",
-  },
-  {
-    id: "30",
-    flag: "green",
-    status: "pending",
-    title: "Plan a Picnic | 30 NEW!",
-    note: "Organize a picnic in the local park with friends.",
-    date: "2024-08-08T12:00:00",
-  },
-  {
-    id: "31",
-    flag: "pink",
-    status: "pending",
-    title: "DIY Craft Projects | 31 NEW!",
-    note: "Engage in creative DIY craft projects at home.",
-    date: "2024-08-18T14:30:00",
-  },
-  {
-    id: "32",
-    flag: "orange",
-    status: "pending",
-    title: "Virtual Book Club | 32 NEW!",
-    note: "Start or join a virtual book club for literary discussions.",
-    date: "2024-08-27T17:15:00",
-  },
-  {
-    id: "33",
-    flag: "green",
-    status: "pending",
-    title: "Fall Cleaning | 33 NEW!",
-    note: "Prepare the home for the fall season with a thorough cleaning.",
-    date: "2024-09-05T10:30:00",
-  },
-  {
-    id: "34",
-    flag: "pink",
-    status: "pending",
-    title: "Explore Local Trails | 34 NEW!",
-    note: "Take scenic walks and explore local trails for outdoor exercise.",
-    date: "2024-09-15T15:00:00",
-  },
-  {
-    id: "35",
-    flag: "orange",
-    status: "pending",
-    title: "Backyard Bonfire Night | 35 NEW!",
-    note: "Host a cozy bonfire night in the backyard with friends.",
-    date: "2024-09-28T19:45:00",
-  },
-  {
-    id: "36",
-    flag: "green",
-    status: "pending",
-    title: "Pumpkin Carving",
-    note: "Engage in pumpkin carving activities for Halloween decorations.",
-    date: "2024-10-10T14:00:00",
-  },
-  {
-    id: "37",
-    flag: "pink",
-    status: "pending",
-    title: "Home Movie Night",
-    note: "Create a cozy home movie night with favorite films and snacks.",
-    date: "2024-10-22T19:30:00",
-  },
-  {
-    id: "38",
-    flag: "orange",
-    status: "pending",
-    title: "Try a New Recipe",
-    note: "Experiment with cooking by trying out a new recipe for dinner.",
-    date: "2024-10-30T18:15:00",
-  },
-  {
-    id: "39",
-    flag: "green",
-    status: "pending",
-    title: "Thanksgiving Prep",
-    note: "Prepare for Thanksgiving by planning the menu and decorations.",
-    date: "2024-11-10T12:45:00",
-  },
-  {
-    id: "40",
-    flag: "pink",
-    status: "pending",
-    title: "Nature Walk",
-    note: "Take a leisurely nature walk to enjoy the fall foliage.",
-    date: "2024-11-18T15:30:00",
-  },
-  {
-    id: "41",
-    flag: "orange",
-    status: "pending",
-    title: "Gratitude Journaling",
-    note: "Start a gratitude journal to reflect on daily blessings.",
-    date: "2024-11-27T21:00:00",
-  },
-  {
-    id: "42",
-    flag: "green",
-    status: "pending",
-    title: "Holiday Decorations",
-    note: "Decorate the home with festive holiday decorations and lights.",
-    date: "2024-12-05T17:00:00",
-  },
-  {
-    id: "43",
-    flag: "pink",
-    status: "pending",
-    title: "Virtual Holiday Party",
-    note: "Host a virtual holiday party for friends and family.",
-    date: "2024-12-18T20:15:00",
-  },
-  {
-    id: "44",
-    flag: "orange",
-    status: "pending",
-    title: "Year-End Reflection",
-    note: "Reflect on the achievements and experiences of the year.",
-    date: "2024-12-31T23:59:59",
+    id: "d5",
+    flag: "yellow",
+    status: "completed",
+    title: "Task 1-2",
+    note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
+    date: "2024-01-01T08:06:37.051Z",
+    date_created: "2024-01-01T08:06:00.001Z",
+    last_modified: "2024-01-01T08:07:00.001Z",
   },
 ];
 
 export const DEV_TEST_DATA_TRASH = [
   {
-    id: "45",
-    flag: "pink",
-    status: "trash",
-    title: "Home Painting Project | 45 NEW!",
-    note: "Start a painting project to refresh the home's interior.",
-    date: "2024-04-22T14:30:00",
-  },
-  {
-    id: "46",
-    flag: "orange",
-    status: "trash",
-    title: "Explore New Recipes | 46 NEW!",
-    note: "Try cooking new recipes and explore different cuisines.",
-    date: "2024-04-29T12:15:00",
-  },
-  {
-    id: "47",
+    id: "d3",
     flag: "green",
     status: "trash",
-    title: "Gardening Day | 47 NEW!",
-    note: "Plant flowers and vegetables in the garden.",
-    date: "2024-05-08T10:00:00",
+    title: "Task 3-2",
+    note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
+    date: "2024-01-01T08:06:37.051Z",
+    date_created: "2024-01-01T08:06:00.001Z",
+    last_modified: "2024-01-01T08:07:00.001Z",
   },
   {
-    id: "48",
-    flag: "pink",
+    id: "d6",
+    flag: "yellow",
     status: "trash",
-    title: "DIY Home Decor | 48 NEW!",
-    note: "Create handmade decorations to personalize the home.",
-    date: "2024-05-18T13:45:00",
-  },
-  {
-    id: "49",
-    flag: "orange",
-    status: "trash",
-    title: "Virtual Home Tour | 49 NEW!",
-    note: "Organize a virtual home tour with friends and family.",
-    date: "2024-05-29T15:30:00",
-  },
-  {
-    id: "50",
-    flag: "green",
-    status: "trash",
-    title: "Family Movie Night | 50 NEW!",
-    note: "Set up a cozy movie night with family at home.",
-    date: "2024-06-06T18:00:00",
-  },
-  {
-    id: "51",
-    flag: "pink",
-    status: "trash",
-    title: "Organize Digital Files | 51 NEW!",
-    note: "Sort and organize digital files on the computer.",
-    date: "2024-06-15T11:30:00",
-  },
-  {
-    id: "52",
-    flag: "orange",
-    status: "trash",
-    title: "Summer Cleaning | 52 NEW!",
-    note: "Deep clean and declutter for a fresh start to summer.",
-    date: "2024-06-28T14:45:00",
-  },
-  {
-    id: "53",
-    flag: "green",
-    status: "trash",
-    title: "Beach Day | 53 NEW!",
-    note: "Plan a day trip to the beach for relaxation and fun.",
-    date: "2024-07-10T09:30:00",
-  },
-  {
-    id: "54",
-    flag: "orange",
-    status: "trash",
-    title: "Virtual Book Club | 54 NEW!",
-    note: "Start or join a virtual book club for literary discussions.",
-    date: "2024-08-27T17:15:00",
-  },
-  {
-    id: "55",
-    flag: "green",
-    status: "trash",
-    title: "Fall Cleaning | 55 NEW!",
-    note: "Prepare the home for the fall season with a thorough cleaning.",
-    date: "2024-09-05T10:30:00",
-  },
-  {
-    id: "56",
-    flag: "pink",
-    status: "trash",
-    title: "Explore Local Trails | 56 NEW!",
-    note: "Take scenic walks and explore local trails for outdoor exercise.",
-    date: "2024-09-15T15:00:00",
-  },
-  {
-    id: "57",
-    flag: "orange",
-    status: "trash",
-    title: "Backyard Bonfire Night | 57 NEW!",
-    note: "Host a cozy bonfire night in the backyard with friends.",
-    date: "2024-09-28T19:45:00",
+    title: "Task 1-2",
+    note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
+    date: "2024-01-01T08:06:37.051Z",
+    date_created: "2024-01-01T08:06:00.001Z",
+    last_modified: "2024-01-01T08:07:00.001Z",
   },
 ];

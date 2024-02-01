@@ -28,8 +28,13 @@ import {
   DEV_TEST_DATA_COMPLETED,
   DEV_TEST_DATA_PENDING,
   DEV_TEST_DATA_TRASH,
+  authenticateUser,
+  clearUserData,
+  getUserCloudTasks,
+  syncUserData,
 } from "../js/main";
 import WebView from "react-native-webview";
+import LoginView from "./LoginView";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -42,6 +47,7 @@ export const HomePage = () => {
     note: "",
     date: new Date(),
     date_created: new Date(),
+    last_modified: new Date(),
   };
   //
   const [activeTab, setActiveTab] = useState("PENDING");
@@ -59,6 +65,8 @@ export const HomePage = () => {
   const [pendingSortedByDate, setPendingSortedByDate] = useState({});
   const [trashSortedByDate, setTrashSortedByDate] = useState({});
   //
+  const [loginView, setLoginView] = useState(false);
+  const [user, setUser] = useState(false);
   const [sortedByDate, setSortedByDate] = useState(false);
   const [message, setMessage] = useState("null");
   const [modalVisible, setModalVisible] = useState(false);
@@ -122,9 +130,54 @@ export const HomePage = () => {
   //
   //
 
+  useEffect(() => {}, []);
+
   useEffect(() => {
-    getToDoItems();
+    fetchUserData();
+    // handleGetUserCloudTask();
   }, []);
+
+  const fetchUserData = async () => {
+    try {
+      // validate user data stored locally
+      const user = await authenticateUser();
+
+      // if the user is authenticated
+      if (user) {
+        // set user state
+        setUser(user);
+        // sync with server
+        const tasksObj = await syncUserData(user, {
+          completed: completed,
+          pending: pending,
+          trash: trash,
+        });
+
+        if (tasksObj && tasksObj !== undefined && tasksObj !== null) {
+          if (tasksObj?.completed && tasksObj?.pending && tasksObj?.trash) {
+            setCompleted(tasksObj?.completed);
+            setCompletedSortedByDate(
+              sortObjectByMonth(sortTasksByDate(tasksObj?.completed))
+            );
+            setPending(tasksObj?.pending);
+            setPendingSortedByDate(
+              sortObjectByMonth(sortTasksByDate(tasksObj?.pending))
+            );
+            setTrash(tasksObj?.trash);
+            setTrashSortedByDate(
+              sortObjectByMonth(sortTasksByDate(tasksObj?.trash))
+            );
+          }
+        }
+      } else {
+        // if the user is NOT authenticated
+        setUser(false);
+      }
+    } catch (error) {
+      console.error("Error during authentication:", error);
+      setUser(false);
+    }
+  };
 
   const formatDate = (date) => {
     const options = { day: "numeric", month: "short", year: "numeric" };
@@ -512,6 +565,11 @@ export const HomePage = () => {
     );
   };
 
+  const handleSetLoginView = (bool) => {
+    setLoginView(bool);
+    fetchUserData();
+  };
+
   const dev_addToDoItems = async () => {
     try {
       await AsyncStorage.setItem(
@@ -535,6 +593,34 @@ export const HomePage = () => {
       AsyncStorage.clear();
       getToDoItems();
     } catch (e) {}
+  };
+
+  const handleGetUserCloudTask = () => {
+    const _handleGetUserCloudTask = async () => {
+      const tasksObj = await syncUserData(user, {
+        completed: completed,
+        pending: pending,
+        trash: trash,
+      });
+
+      if (tasksObj && tasksObj !== undefined && tasksObj !== null) {
+        if (tasksObj?.completed && tasksObj?.pending && tasksObj?.trash) {
+          setCompleted(tasksObj?.completed);
+          setCompletedSortedByDate(
+            sortObjectByMonth(sortTasksByDate(tasksObj?.completed))
+          );
+          setPending(tasksObj?.pending);
+          setPendingSortedByDate(
+            sortObjectByMonth(sortTasksByDate(tasksObj?.pending))
+          );
+          setTrash(tasksObj?.trash);
+          setTrashSortedByDate(
+            sortObjectByMonth(sortTasksByDate(tasksObj?.trash))
+          );
+        }
+      }
+    };
+    _handleGetUserCloudTask();
   };
 
   //
@@ -620,6 +706,12 @@ export const HomePage = () => {
 
       <StatusBar hidden={false} />
 
+      {/* LOGIN MODAL */}
+      <LoginView
+        handleSetLoginView={handleSetLoginView}
+        loginView={loginView}
+      />
+
       {/* BURGER MENU MODAL */}
       <Modal
         animationType="slide"
@@ -645,12 +737,141 @@ export const HomePage = () => {
         >
           <ScrollView
             style={{
-              width: windowWidth * 0.9,
-              maxHeight: windowHeight * 0.8,
+              width: windowWidth * 1,
+              maxHeight: windowHeight * 1,
               backgroundColor: "white",
             }}
           >
             <>
+              {/* CLOUD FEATURES */}
+              <Text
+                style={[
+                  {
+                    fontSize: 12,
+                    paddingVertical: 5,
+                    paddingHorizontal: 20,
+                    backgroundColor: "#e1e1e1",
+                  },
+                ]}
+              >
+                CLOUD
+              </Text>
+              <View
+                style={{
+                  paddingVertical: 20,
+                  paddingHorizontal: 20,
+                  width: windowWidth * 1,
+                  backgroundColor: "white",
+                  borderBottomColor: "gray",
+                  borderBottomWidth: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <View
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Ionicons
+                    style={{
+                      marginRight: 10,
+                    }}
+                    name={!user ? "cloud-offline" : "cloud"}
+                    size={30}
+                    color={!user ? "black" : "#0066a4"}
+                  />
+                  <Pressable
+                    onPress={() => {
+                      if (user) {
+                        handleGetUserCloudTask();
+                      } else {
+                        setLoginView(true);
+                      }
+                    }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                    }}
+                  >
+                    {({ pressed }) => (
+                      <View
+                        style={{
+                          opacity: pressed ? 0.5 : 1,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 18,
+                            fontWeight: "bold",
+                            color: "#0066a4",
+                          }}
+                        >
+                          {!user ? "SIGN IN" : "CONNECTED"}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {!user
+                            ? "Can't Sync To Cloud. You're Not Signed In"
+                            : `Signed In as ${user?.username}`}
+                        </Text>
+                      </View>
+                    )}
+                  </Pressable>
+                </View>
+                <Pressable
+                  onPress={() => {
+                    Alert.alert(
+                      "Log Out",
+                      "Are you sure you want to logout? You won't be able to backup your account data.",
+                      [
+                        {
+                          text: "No",
+                          onPress: () => {
+                            return false;
+                          },
+                          style: "cancel",
+                        },
+                        {
+                          text: "YES",
+                          onPress: () => {
+                            setUser(false);
+                            clearUserData();
+                            setModalVisible(false);
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                >
+                  {({ pressed }) => (
+                    <>
+                      {user && (
+                        <Ionicons
+                          style={{
+                            opacity: pressed ? 0.4 : 1,
+                          }}
+                          name={"log-out-outline"}
+                          size={30}
+                          color="black"
+                        />
+                      )}
+                    </>
+                  )}
+                </Pressable>
+              </View>
+
               {/* FILTER */}
               <Text
                 style={[
@@ -977,7 +1198,7 @@ export const HomePage = () => {
                       opacity: pressed ? 0.5 : 1,
                       paddingVertical: 30,
                       paddingHorizontal: 20,
-                      width: windowWidth * 0.9,
+                      width: windowWidth * 1,
                       backgroundColor: "white",
                       borderBottomColor: "gray",
                       borderBottomWidth: 1,
@@ -1116,7 +1337,7 @@ export const HomePage = () => {
                     textAlign: "center",
                     paddingHorizontal: 20,
                     backgroundColor: "gray",
-                    width: windowWidth * 0.9,
+                    width: windowWidth * 1,
                     opacity: pressed ? 0.5 : 1,
                   },
                 ]}
