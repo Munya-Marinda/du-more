@@ -1,4 +1,7 @@
-# Du-More 📝 Version 2.0.0 Update!
+![1024-500-wallpaper](https://github.com/Munya-Marinda/du-more/assets/84540577/60d3898f-d7fa-4f15-b0a9-4f0f0591d3f9)
+
+
+# Du-More 📝 Version 2.0.3 Update!
 
 ```React Native To-Do List App```
 
@@ -40,6 +43,16 @@ Upgrade to the latest version now and enjoy a more polished, efficient, and user
 ### Intuitive User Interface 📱
 - The app boasts a user-friendly interface that allows you to navigate effortlessly. 🚀
 - Clear visuals make it simple to distinguish between tasks and their statuses. 👁️
+ 
+
+![amazon_g198-0_amazon](https://github.com/Munya-Marinda/du-more/assets/84540577/9c465080-7bab-406f-b67f-b76880231a84)
+![amazon_g204_amazon](https://github.com/Munya-Marinda/du-more/assets/84540577/7ccd6e2e-3be2-4f2e-a0b5-95f34a1e4bec)
+![amazon_g203_amazon](https://github.com/Munya-Marinda/du-more/assets/84540577/117a1183-ec57-42e4-9973-9ea6d41ceb1e)
+![amazon_g202_amazon](https://github.com/Munya-Marinda/du-more/assets/84540577/84e4464e-8715-41ce-9672-611ee0edba93)
+![amazon_g201_amazon](https://github.com/Munya-Marinda/du-more/assets/84540577/6c7d1b95-43f2-4fd8-b0d5-25150e5f9bfb)
+![amazon_g200_amazon](https://github.com/Munya-Marinda/du-more/assets/84540577/a6665368-dacd-430d-abbc-d0eb022f855f)
+![amazon_g199_amazon](https://github.com/Munya-Marinda/du-more/assets/84540577/9f2f41a0-5377-4895-8ebc-bea7eaa9d3ba) 
+
 
 ## Getting Started 🚀
 
