@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert, Linking, ToastAndroid } from "react-native";
 import { decode as base64_decode, encode as base64_encode } from "base-64";
 
-const ip = "192.168.43.214";
+const ip = "";
 export const baseURL = `http://${ip}/munya-server/api/du-more/`;
 
 export function formatDate(inputDate) {
@@ -117,23 +117,17 @@ export const syncUserData = async (user, localdata) => {
     return fetch(baseURL, requestOptions)
       .then((response) => response.text())
       .then((result) => {
-        console.log("result 1", result);
-        console.log("result user 1", user);
         try {
           const resultObj = JSON.parse(result);
           return resultObj.value.newUpdatedTasks;
         } catch (error) {
-          console.log("error 0", error);
-          console.log("result 2", result);
           return false;
         }
       })
       .catch((error) => {
-        console.log("error 1", error);
         return false;
       });
   } catch (error) {
-    console.log("error 2", error);
     return false;
   }
 };
@@ -141,8 +135,10 @@ export const syncUserData = async (user, localdata) => {
 export const authenticateUser = async () => {
   //
   try {
-    const jsonValue = await AsyncStorage.getItem("user_data");
-    return jsonValue != null ? JSON.parse(jsonValue) : false;
+    let jsonValue = await AsyncStorage.getItem("user_data");
+    let jsonObj = jsonValue != null ? JSON.parse(jsonValue) : false;
+    const userCloud = await authenticateUserCloud(jsonObj);
+    return userCloud;
   } catch (e) {
     return false;
   }
@@ -154,6 +150,48 @@ const createUserAuthHeaders = (user) => {
   const base64 = base64_encode(`${user?.username}:${user?.session}`);
   myHeaders.append("Authorization", `Basic ${base64}`);
   return myHeaders;
+};
+
+export const authenticateUserCloud = async (user) => {
+  try {
+    const base64 = base64_encode(`${user?.username}:${user?.session}`);
+
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", `Basic ${base64}`);
+
+    var formdata = new FormData();
+    formdata.append("authenticateuser", "1");
+
+    var requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: formdata,
+      redirect: "follow",
+    };
+
+    // Add the return statement here
+    return fetch(baseURL, requestOptions)
+      .then((response) => response.text())
+      .then((result) => {
+        // console.log("authenticateuser result", result);
+        try {
+          const resultObj = JSON.parse(result);
+
+          if (resultObj.result === true) {
+            return resultObj.value;
+          } else {
+            return false;
+          }
+        } catch (error) {
+          return false;
+        }
+      })
+      .catch((error) => {
+        return false;
+      });
+  } catch (error) {
+    return false;
+  }
 };
 
 export const DEV_TEST_DATA_PENDING = [

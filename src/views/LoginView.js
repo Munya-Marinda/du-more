@@ -56,10 +56,10 @@ export default function LoginView({
         redirect: "follow",
       };
 
-      fetch(`${baseURL}?authenticateUser=1`, requestOptions)
+      fetch(`${baseURL}?loginuser=1`, requestOptions)
         .then((response) => response.text())
         .then((result) => {
-          console.log("result fetchData", result);
+          // console.log("result fetchData", result);
           const responseObj = JSON.parse(result);
           if (responseObj?.result === true) {
             saveUserData(responseObj?.value);
@@ -76,11 +76,11 @@ export default function LoginView({
           setIsLoading(false);
         })
         .catch((error) => {
-          console.log("LoginView 0 error", error);
+          // console.log("LoginView 0 error", error);
         });
     } catch (error) {
       setIsLoading(false);
-      console.log("LoginView 1 error", error);
+      // console.log("LoginView 1 error", error);
     }
   };
 

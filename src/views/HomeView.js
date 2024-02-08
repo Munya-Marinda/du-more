@@ -34,7 +34,7 @@ import {
   syncUserData,
 } from "../js/main";
 import WebView from "react-native-webview";
-import LoginView from "./LoginView";
+// import LoginView from "./LoginView";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -130,11 +130,8 @@ export const HomePage = () => {
   //
   //
 
-  useEffect(() => {}, []);
-
   useEffect(() => {
-    fetchUserData();
-    // handleGetUserCloudTask();
+    getToDoItems();
   }, []);
 
   const fetchUserData = async () => {
@@ -707,10 +704,10 @@ export const HomePage = () => {
       <StatusBar hidden={false} />
 
       {/* LOGIN MODAL */}
-      <LoginView
+      {/* <LoginView
         handleSetLoginView={handleSetLoginView}
         loginView={loginView}
-      />
+      /> */}
 
       {/* BURGER MENU MODAL */}
       <Modal
@@ -744,7 +741,7 @@ export const HomePage = () => {
           >
             <>
               {/* CLOUD FEATURES */}
-              <Text
+              {/* <Text
                 style={[
                   {
                     fontSize: 12,
@@ -870,7 +867,7 @@ export const HomePage = () => {
                     </>
                   )}
                 </Pressable>
-              </View>
+              </View> */}
 
               {/* FILTER */}
               <Text

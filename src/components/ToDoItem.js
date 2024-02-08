@@ -391,41 +391,18 @@ export const ToDoItem = ({ item, asyncKey, screenMode, getToDoItems }) => {
             >
               <Text style={globalStyles.item_flag_text_1}>|</Text>
             </View>
-
             <View style={globalStyles.item_info_parent_1}>
               <View style={globalStyles.item_title_text_1_parent}>
-                <Text style={globalStyles.item_title_text_1} numberOfLines={1}>
-                  {item.id ? item.id : "no id"}
-                </Text>
                 <Text style={globalStyles.item_title_text_1} numberOfLines={1}>
                   {item.title ? item.title : "no title"}
                 </Text>
               </View>
               <View style={globalStyles.item_date_text_1_parent}>
                 <Text style={globalStyles.item_date_text_1}>
-                  {/* {item.date ? formatDate(item.date) : "no date"} */}
-                  {item.last_modified ? item.last_modified : "no date"}
+                  {item.date ? formatDate(item.date) : "no date"}
                 </Text>
               </View>
             </View>
-
-            {screenMode.value === "edit" && (
-              <>
-                {/* <View
-                  style={[
-                    { width: 20, height: 20, borderRadius: 70 },
-                    screenMode.selectedItemsID.indexOf(item?.id) !== -1
-                      ? {
-                          backgroundColor: "blue",
-                        }
-                      : {
-                          borderWidth: 2,
-                          borderColor: "blue",
-                        },
-                  ]}
-                ></View> */}
-              </>
-            )}
           </View>
         </View>
       </TouchableOpacity>
