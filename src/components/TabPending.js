@@ -2,13 +2,14 @@ import { Dimensions, ScrollView, Text, View } from "react-native";
 import { ToDoItem } from "../components/ToDoItem";
 import { globalStyles } from "../styles/styles";
 import { ToDoItemsByDate } from "./ToDoItemsByDate";
-import ToDoItemsByDateHorizontalScroll from "./ToDoItemsByDateHorizontalScroll";
+import ToDoItemsMonthlyFocus from "./ToDoItemsMonthlyFocus/ToDoItemsMonthlyFocus";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 export const TabPending = ({
   items,
+  setModalVisible,
   getToDoItems,
   sortedByDate,
   screenMode,
@@ -21,19 +22,11 @@ export const TabPending = ({
           fontWeight: "bold",
           color: "gray",
           marginLeft: 10,
-          marginBottom: 10,
         }}
       >
-        Today's Focus
+        This Month's Focus
       </Text>
-      <View
-        style={{
-          marginVertical: 15,
-          height: windowWidth / 3.5,
-        }}
-      >
-        <ToDoItemsByDateHorizontalScroll items={items} />
-      </View>
+      <ToDoItemsMonthlyFocus items={items} setModalVisible={setModalVisible} />
       <ScrollView style={globalStyles.homePage_items_scrollView_1}>
         <ToDoItemsByDate
           items={items}

@@ -60,51 +60,50 @@ export const ToDoItemsByDate = ({
       ) : (
         <>
           {Object.keys(items)
-            .reverse()
-            .map((month, index) => {
-              //
-              return (
-                <View
-                  key={index}
+          .map((month, index) => {
+            //
+            return (
+              <View
+                key={index}
+                style={{
+                  marginBottom: 10,
+                }}
+              >
+                <Text
                   style={{
+                    fontSize: 16,
+                    fontWeight: "bold",
+                    color: "gray",
+                    marginLeft: 10,
                     marginBottom: 10,
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      fontWeight: "bold",
-                      color: "gray",
-                      marginLeft: 10,
-                      marginBottom: 10,
-                    }}
-                  >
-                    {month}
-                  </Text>
-                  {Object.keys(items[month])
-                    .reverse()
-                    .map((day, index) => {
-                      //
-                      return (
-                        <View key={index}>
-                          {items[month][day].reverse().map((item, index) => {
-                            return (
-                              <ToDoItem
-                                item={item}
-                                key={index}
-                                index={index}
-                                screenMode={screenMode}
-                                asyncKey={asyncKey}
-                                getToDoItems={getToDoItems}
-                              />
-                            );
-                          })}
-                        </View>
-                      );
-                    })}
-                </View>
-              );
-            })}
+                  {month}
+                </Text>
+                {Object.keys(items[month])
+                  .reverse()
+                  .map((day, index) => {
+                    //
+                    return (
+                      <View key={index}>
+                        {items[month][day].reverse().map((item, index) => {
+                          return (
+                            <ToDoItem
+                              item={item}
+                              key={index}
+                              index={index}
+                              screenMode={screenMode}
+                              asyncKey={asyncKey}
+                              getToDoItems={getToDoItems}
+                            />
+                          );
+                        })}
+                      </View>
+                    );
+                  })}
+              </View>
+            );
+          })}
         </>
       )}
     </>

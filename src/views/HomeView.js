@@ -2031,6 +2031,23 @@ export const HomePage = () => {
       {/* TABS */}
       {activeTab === "PENDING" && (
         <TabPending
+          setModalVisible={(bool, options) => {
+            setModalVisible(bool);
+
+            if (options?.date) {
+              try {
+                let date = new Date(options?.date);
+                setSingleItemData({
+                  ...singleItemData,
+                  date: date,
+                  date_created: date,
+                  last_modified: date,
+                });
+              } catch (error) {
+              } finally {
+              }
+            }
+          }}
           screenMode={{
             handleScreenMode: handleScreenMode,
             selectedItemsIds: selectedItemsIds,

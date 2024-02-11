@@ -1,5 +1,6 @@
 import { SafeAreaView, StyleSheet, Text, View, StatusBar } from "react-native";
 import { HomePage } from "./src/views/HomeView";
+import ManualTest from "./src/components/ManualTest";
 
 export default function App() {
   //
@@ -7,6 +8,7 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle={"dark-content"} />
       <HomePage />
+      {/* <ManualTest /> */}
     </SafeAreaView>
   );
 }
