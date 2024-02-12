@@ -2044,8 +2044,8 @@ export const HomePage = () => {
                   last_modified: date,
                 });
               } catch (error) {
-              } finally {
-              }
+                console.error(error);
+              } 
             }
           }}
           screenMode={{

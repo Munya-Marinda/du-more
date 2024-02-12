@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ToastAndroid } from "react";
 import {
   View,
   Text,
@@ -46,7 +46,12 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
   }, []);
 
   useEffect(() => {
-    setCurrentDayTasks(items[monthsOrder[currentMonth + 1]][selectedDate]);
+    try {
+      setCurrentDayTasks(items[monthsOrder[currentMonth + 1]][selectedDate]);
+      console.log(items[monthsOrder[currentMonth + 1]][selectedDate]);
+    } catch (error) {
+      // console.error(error);
+    }
   }, [currentMonth, selectedDate]);
 
   function createArray(length, defaultValue) {
