@@ -2033,7 +2033,6 @@ export const HomePage = () => {
         <TabPending
           setModalVisible={(bool, options) => {
             setModalVisible(bool);
-
             if (options?.date) {
               try {
                 let date = new Date(options?.date);
@@ -2045,7 +2044,7 @@ export const HomePage = () => {
                 });
               } catch (error) {
                 console.error(error);
-              } 
+              }
             }
           }}
           screenMode={{

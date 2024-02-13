@@ -35,6 +35,7 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
   const [currentMonth, setCurrentMonth] = useState(0);
+  const [allTaskDates, setAllTaskDates] = useState([]);
   const [currentDayTasks, setCurrentDayTasks] = useState(undefined);
 
   const handleSelectedDate = (newIndex) => {
@@ -43,33 +44,52 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
 
   useEffect(() => {
     setYearData(generateDatesForYear());
+    handleSetAllTaskDates();
   }, []);
+
+  const handleSetAllTaskDates = () => {
+    const monthsWithTasksArray = Object.keys(items);
+    const _allTaskDates = {};
+    if (monthsWithTasksArray?.length && monthsWithTasksArray?.length > 0) {
+      Object.keys(items).map((month, i) => {
+        const daysWithTasksArray = Object.keys(items[month]);
+        if (daysWithTasksArray?.length && daysWithTasksArray?.length > 0) {
+          daysWithTasksArray.map((day, i) => {
+            const dateKey =
+              currentYear + "-" + (monthsOrder.indexOf(month) + 1) + "-" + day;
+            _allTaskDates[dateKey] = items[month][day];
+          });
+        }
+      });
+    }
+    setAllTaskDates(_allTaskDates);
+  };
 
   useEffect(() => {
     try {
-      setCurrentDayTasks(items[monthsOrder[currentMonth + 1]][selectedDate]);
-      console.log(items[monthsOrder[currentMonth + 1]][selectedDate]);
-    } catch (error) {
-      // console.error(error);
-    }
+      setCurrentDayTasks(items[monthsOrder[currentMonth]][selectedDate]);
+    } catch (error) {}
   }, [currentMonth, selectedDate]);
 
   function createArray(length, defaultValue) {
     return Array.from({ length }, () => defaultValue);
   }
 
-  function generateDatesForYear(year = 2024) {
+  function generateDatesForYear() {
     const months = [];
     for (let month = 0; month < 12; month++) {
-      const monthName = new Date(year, month, 1).toLocaleString("en-us", {
-        month: "long",
-      });
-      const monthAbbreviation = new Date(year, month, 1).toLocaleString(
+      const monthName = new Date(currentYear, month, 1).toLocaleString(
+        "en-us",
+        {
+          month: "long",
+        }
+      );
+      const monthAbbreviation = new Date(currentYear, month, 1).toLocaleString(
         "en-us",
         { month: "short" }
       );
-      const maxDays = new Date(year, month + 1, 0).getDate();
-      const startingWeekDayNumber = new Date(year, month, 1).getDay();
+      const maxDays = new Date(currentYear, month + 1, 0).getDate();
+      const startingWeekDayNumber = new Date(currentYear, month, 1).getDay();
       months.push({
         month: [monthName, monthAbbreviation],
         maxDays,
@@ -96,22 +116,25 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
               color: "gray",
               fontWeight: "bold",
               paddingVertical: 20,
+              textAlign: "center",
               paddingHorizontal: 10,
-              backgroundColor: "black",
+              backgroundColor: "white",
             }}
           >
-            2024 CALENDAR
+            {currentYear} CALENDAR
           </Text>
+
           <CalendarToDoItemsMonthlyFocusEvents
             yearData={yearData}
+            currentYear={currentYear}
             createArray={createArray}
+            allTaskDates={allTaskDates}
             selectedDate={selectedDate}
             currentMonth={currentMonth}
             handleSelectedDate={handleSelectedDate}
           />
 
           {/* LOWER PANEL */}
-
           <ScrollView horizontal={true} style={{ marginVertical: 15 }}>
             {monthsOrder.map((month, i) => {
               return (
@@ -154,7 +177,6 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                 {!currentDayTasks ? (
                   <Pressable
                     onPress={() => {
-                      // 2024-02-11T07:40:24.783Z
                       let currentTime = new Date().toISOString().split("T")[1];
                       setModalVisible(true, {
                         date: `${currentYear}-${
@@ -227,8 +249,6 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                   </Pressable>
                 ) : (
                   currentDayTasks.map((data, index2) => {
-                    // console.log("data", data);
-                    //
                     return (
                       <Pressable
                         key={index2}
@@ -271,7 +291,7 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                                   fontWeight: "bold",
                                 }}
                               >
-                                {data?.title}
+                                {data.title ? data.title : "no title"}
                               </Text>
                               <Text
                                 style={{
@@ -279,7 +299,7 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                                   color: "black",
                                 }}
                               >
-                                {data?.note}
+                                {data.note ? data.note : "no note"}
                               </Text>
                             </View>
                           </View>

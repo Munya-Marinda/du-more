@@ -6,7 +6,9 @@ const windowHeight = Dimensions.get("window").height;
 
 export default function CalendarToDoItemsMonthlyFocusEvents({
   yearData,
+  currentYear,
   createArray,
+  allTaskDates,
   currentMonth,
   selectedDate,
   handleSelectedDate,
@@ -53,6 +55,26 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
                   let isCurrentDate =
                     new Date().getDate() === index + 1 &&
                     new Date().getMonth() === currentMonth + 1;
+
+                  let tasksForTheDay = [];
+                  const taskColorFlags = [];
+
+                  Object.keys(allTaskDates).forEach((dateKey) => {
+                    const taskDate = new Date(dateKey).toDateString();
+                    const calendarDate = new Date(
+                      currentYear + "-" + (currentMonth + 1) + "-" + (index + 1)
+                    ).toDateString();
+                    if (taskDate === calendarDate) {
+                      tasksForTheDay = allTaskDates[dateKey];
+                    }
+                  });
+
+                  if (tasksForTheDay?.length > 0) {
+                    tasksForTheDay.forEach((task) => {
+                      taskColorFlags.push(task?.flag);
+                    });
+                  }
+
                   return (
                     <Pressable
                       onPress={() => {
@@ -71,20 +93,46 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
                       ]}
                     >
                       {({ pressed }) => (
-                        <Text
-                          style={[
-                            styles.dayText,
-                            {
-                              color: isCurrentDate
-                                ? "white"
-                                : pressed
-                                ? "silver"
-                                : "black",
-                            },
-                          ]}
-                        >
-                          {index + 1}
-                        </Text>
+                        <>
+                          <Text
+                            style={[
+                              styles.dayText,
+                              {
+                                color: isCurrentDate
+                                  ? "white"
+                                  : pressed
+                                  ? "silver"
+                                  : "black",
+                              },
+                            ]}
+                          >
+                            {index + 1}
+                          </Text>
+                          {taskColorFlags?.length > 0 && (
+                            <View
+                              style={{
+                                marginTop: 3,
+                                display: "flex",
+                                flexWrap: "wrap",
+                                flexDirection: "row",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {taskColorFlags?.map((color, i) => (
+                                <View
+                                  key={i}
+                                  style={{
+                                    width: 7,
+                                    height: 7,
+                                    marginHorizontal: 1,
+                                    borderRadius: 50,
+                                    backgroundColor: color,
+                                  }}
+                                ></View>
+                              ))}
+                            </View>
+                          )}
+                        </>
                       )}
                     </Pressable>
                   );

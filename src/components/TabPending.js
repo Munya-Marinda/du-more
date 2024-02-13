@@ -16,7 +16,7 @@ export const TabPending = ({
 }) => {
   return (
     <>
-      <Text
+      {/* <Text
         style={{
           fontSize: 16,
           fontWeight: "bold",
@@ -25,7 +25,7 @@ export const TabPending = ({
         }}
       >
         This Month's Focus
-      </Text>
+      </Text> */}
       <ToDoItemsMonthlyFocus items={items} setModalVisible={setModalVisible} />
       <ScrollView style={globalStyles.homePage_items_scrollView_1}>
         <ToDoItemsByDate

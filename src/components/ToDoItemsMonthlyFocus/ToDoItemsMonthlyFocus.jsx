@@ -33,82 +33,42 @@ const ToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
         handleShowCalendarModal={handleShowCalendarModal}
         setModalVisible={setModalVisible}
       />
-      <View style={{ flex: 1 }}>
-        <View
-          style={{
-            height: windowWidth * 0.2,
-            borderWidth: 1,
-            borderColor: "green",
-          }}
-        >
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <View
+        style={{
+          display: "flex",
+          alignItems: "center",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <Pressable onPress={handleShowCalendarModal}>
+          {({ pressed }) => (
             <View
               style={{
-                flexWrap: "wrap",
-                flexDirection: "row",
+                // width: 45,
+                height: 25,
+                borderWidth: 1,
+                display: "flex",
+                borderRadius: 100,
+                alignItems: "center",
+                borderColor: "silver",
                 paddingHorizontal: 10,
-                justifyContent: "flex-start",
+                flexDirection: "column",
+                justifyContent: "center",
+                transform: "translateY(-12px)",
+                backgroundColor: pressed ? "gray" : "silver",
               }}
             >
-              {daysInYear.map((date, index) => (
-                <Pressable
-                  key={index}
-                  style={{
-                    marginRight: 10,
-                    marginBottom: 15,
-                    paddingHorizontal: 10,
-                    width: windowWidth * 0.2,
-                    height: windowWidth * 0.2,
-                    backgroundColor: "#ebebeb",
-                  }}
-                >
-                  <Text
-                  //  numberOfLines={1}
-                  >
-                    {date}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </ScrollView>
-        </View>
-        <View
-          style={{
-            display: "flex",
-            alignItems: "center",
-            flexDirection: "column",
-            justifyContent: "center",
-          }}
-        >
-          <Pressable onPress={handleShowCalendarModal}>
-            {({ pressed }) => (
-              <View
+              <Text
                 style={{
-                  // width: 45,
-                  height: 25,
-                  borderWidth: 1,
-                  display: "flex",
-                  borderRadius: 100,
-                  alignItems: "center",
-                  borderColor: "silver",
-                  paddingHorizontal: 10,
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  transform: "translateY(-12px)",
-                  backgroundColor: pressed ? "gray" : "silver",
+                  fontSize: 10,
                 }}
               >
-                <Text
-                  style={{
-                    fontSize: 10,
-                  }}
-                >
-                  OPEN CALENDAR
-                </Text>
-              </View>
-            )}
-          </Pressable>
-        </View>
+                OPEN CALENDAR
+              </Text>
+            </View>
+          )}
+        </Pressable>
       </View>
     </>
   );
