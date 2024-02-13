@@ -248,65 +248,133 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                     )}
                   </Pressable>
                 ) : (
-                  currentDayTasks.map((data, index2) => {
-                    return (
-                      <Pressable
-                        key={index2}
-                        style={{
-                          backgroundColor: "#ebebeb",
-                          borderBottomWidth: 1,
-                          borderBottomColor: "gray",
-                          width: windowWidth,
-                        }}
-                      >
-                        {({ pressed }) => (
+                  <>
+                    <Pressable
+                      onPress={() => {
+                        let currentTime = new Date()
+                          .toISOString()
+                          .split("T")[1];
+                        setModalVisible(true, {
+                          date: `${currentYear}-${
+                            currentMonth + 1
+                          }-${selectedDate}T${currentTime}`,
+                        });
+                      }}
+                      style={{
+                        // height: 300,
+                        backgroundColor: "#ebebeb",
+                        borderTopWidth: 1,
+                        borderTopColor: "gray",
+                        borderBottomWidth: 1,
+                        borderBottomColor: "gray",
+                        width: windowWidth,
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "flex-start",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {({ pressed }) => (
+                        <View
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            opacity: pressed ? 0.2 : 1,
+                            paddingVertical: 10,
+                            justifyContent: "center",
+                          }}
+                        >
+                          <View style={{}}>
+                            <Ionicons
+                              size={40}
+                              color="gray"
+                              name={"add-circle"}
+                              style={{
+                                marginRight: 10,
+                              }}
+                            />
+                          </View>
                           <View
                             style={{
-                              display: "flex",
-                              flexDirection: "row",
-                              alignItems: "flex-start",
-                              opacity: pressed ? 0.2 : 1,
-                              justifyContent: "flex-start",
+                              paddingVertical: 5,
                             }}
                           >
-                            <View
+                            <Text
                               style={{
-                                width: 15,
-                                height: 65,
-                                backgroundColor: data?.flag,
+                                fontSize: 14,
+                                color: "gray",
+                                textAlign: "left",
+                                fontWeight: "bold",
                               }}
                             >
-                              <Text style={{ color: "transparent" }}>|</Text>
-                            </View>
-                            <View
-                              style={{
-                                paddingVertical: 10,
-                                paddingHorizontal: 10,
-                              }}
-                            >
-                              <Text
-                                style={{
-                                  fontSize: 16,
-                                  color: "black",
-                                  fontWeight: "bold",
-                                }}
-                              >
-                                {data.title ? data.title : "no title"}
-                              </Text>
-                              <Text
-                                style={{
-                                  fontSize: 12,
-                                  color: "black",
-                                }}
-                              >
-                                {data.note ? data.note : "no note"}
-                              </Text>
-                            </View>
+                              TAP TO ADD NEW TASK
+                            </Text>
                           </View>
-                        )}
-                      </Pressable>
-                    );
-                  })
+                        </View>
+                      )}
+                    </Pressable>
+
+                    {currentDayTasks.map((data, index2) => {
+                      return (
+                        <Pressable
+                          key={index2}
+                          style={{
+                            backgroundColor: "#ebebeb",
+                            borderBottomWidth: 1,
+                            borderBottomColor: "gray",
+                            width: windowWidth,
+                          }}
+                        >
+                          {({ pressed }) => (
+                            <View
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "flex-start",
+                                opacity: pressed ? 0.2 : 1,
+                                justifyContent: "flex-start",
+                              }}
+                            >
+                              <View
+                                style={{
+                                  width: 15,
+                                  height: 65,
+                                  backgroundColor: data?.flag,
+                                }}
+                              >
+                                <Text style={{ color: "transparent" }}>|</Text>
+                              </View>
+                              <View
+                                style={{
+                                  paddingVertical: 10,
+                                  paddingHorizontal: 10,
+                                }}
+                              >
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    color: "black",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {data.title ? data.title : "no title"}
+                                </Text>
+                                <Text
+                                  style={{
+                                    fontSize: 12,
+                                    color: "black",
+                                  }}
+                                >
+                                  {data.note ? data.note : "no note"}
+                                </Text>
+                              </View>
+                            </View>
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </>
                 )}
               </View>
             </ScrollView>
