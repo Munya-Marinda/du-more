@@ -30,25 +30,21 @@ import {
   DEV_TEST_DATA_TRASH,
   authenticateUser,
   clearUserData,
+  colorOptions,
+  formatTime,
   getUserCloudTasks,
+  initialItemState,
+  mergeTimeAndDate,
   syncUserData,
 } from "../js/main";
 import WebView from "react-native-webview";
+import PushNotification from "../components/PushNotification";
 // import LoginView from "./LoginView";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 export const HomePage = () => {
-  const initialItemState = {
-    flag: "green",
-    status: "pending",
-    title: "",
-    note: "",
-    date: new Date(),
-    date_created: new Date(),
-    last_modified: new Date(),
-  };
   //
   const [activeTab, setActiveTab] = useState("PENDING");
   const [screenMode, setScreenMode] = useState({
@@ -71,6 +67,7 @@ export const HomePage = () => {
   const [message, setMessage] = useState("null");
   const [modalVisible, setModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchedItems, setSearchedItems] = useState([]);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -80,22 +77,6 @@ export const HomePage = () => {
   //
   const [singleItemData, setSingleItemData] = useState(initialItemState);
 
-  const colorOptions = [
-    "green",
-    "blue",
-    "red",
-    "yellow",
-    "orange",
-    "purple",
-    "pink",
-    "black",
-    "white",
-    "gray",
-    "cyan",
-    "magenta",
-    "teal",
-    "maroon",
-  ];
   //
   //
   //
@@ -271,6 +252,10 @@ export const HomePage = () => {
         const pendingItems = JSON.parse(value);
         const newItem = singleItemData;
         newItem.id = generateUniqueID();
+        newItem.date = mergeTimeAndDate(
+          singleItemData.date,
+          singleItemData.time
+        );
         pendingItems.unshift(newItem);
         await AsyncStorage.setItem(
           "pendingItems",
@@ -1506,39 +1491,96 @@ export const HomePage = () => {
                 />
 
                 <View style={globalStyles.modal_color_date_group_1}>
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      color: "gray",
+                      marginRight: 25,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Due Date:
+                  </Text>
                   <TouchableOpacity
                     onPress={() => {
                       setShowDatePicker(true);
                     }}
                   >
+                    {showDatePicker && (
+                      <DateTimePicker
+                        testID="dateTimePicker"
+                        value={singleItemData.date}
+                        minimumDate={new Date()}
+                        mode="date"
+                        is24Hour={true}
+                        display="default"
+                        onChange={(event, selectedDate) => {
+                          const currentDate =
+                            selectedDate || singleItemData.date;
+                          setSingleItemData({
+                            ...singleItemData,
+                            date: currentDate,
+                          });
+                          setShowDatePicker(false);
+                        }}
+                      />
+                    )}
                     <Text style={globalStyles.modal_button_2}>
                       {formatDate(singleItemData.date)}
                     </Text>
                   </TouchableOpacity>
-
-                  {showDatePicker && (
-                    <DateTimePicker
-                      testID="dateTimePicker"
-                      value={singleItemData.date}
-                      minimumDate={new Date()}
-                      mode="date"
-                      is24Hour={true}
-                      display="default"
-                      onChange={(event, selectedDate) => {
-                        const currentDate = selectedDate || singleItemData.date;
-                        setSingleItemData({
-                          ...singleItemData,
-                          date: currentDate,
-                        });
-                        setShowDatePicker(false);
-                      }}
-                    />
-                  )}
-
-                  <ScrollView
-                    horizontal={true}
-                    style={globalStyles.modal_color_option_group_2}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowTimePicker(true);
+                    }}
                   >
+                    {showTimePicker && (
+                      <DateTimePicker
+                        testID="dateTimePicker"
+                        value={singleItemData.time}
+                        // minimumDate={new Date()}
+                        mode="time"
+                        is24Hour={true}
+                        display="default"
+                        onChange={(event, selectedTime) => {
+                          const currentTime =
+                            selectedTime || singleItemData.time;
+                          setSingleItemData({
+                            ...singleItemData,
+                            time: currentTime,
+                          });
+                          setShowTimePicker(false);
+                        }}
+                      />
+                    )}
+                    <Text style={globalStyles.modal_button_2}>
+                      {formatTime(singleItemData.time)}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View
+                  style={{
+                    marginTop: 10,
+                    display: "flex",
+                    marginBottom: 20,
+                    alignItems: "flex-start",
+                    flexDirection: "column",
+                    width: windowWidth / 1.2,
+                    justifyContent: "flex-start",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      color: "gray",
+                      marginBottom: 10,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Select A Color Tag:
+                  </Text>
+                  <View style={globalStyles.modal_color_option_group_2}>
                     <View style={globalStyles.modal_color_option_group_1}>
                       {colorOptions.map((option, i) => (
                         <TouchableOpacity
@@ -1567,7 +1609,7 @@ export const HomePage = () => {
                         </TouchableOpacity>
                       ))}
                     </View>
-                  </ScrollView>
+                  </View>
                 </View>
               </View>
             </View>
@@ -1607,13 +1649,16 @@ export const HomePage = () => {
             >
               <Text style={globalStyles.modal_button_1}>CANCEL</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                addToDoItems();
-              }}
-            >
-              <Text style={globalStyles.modal_button_1}>ADD</Text>
-            </TouchableOpacity>
+            <PushNotification
+              title={"ADD"}
+              addToDoItems={addToDoItems}
+              taskTitle={singleItemData.title}
+              taskNote={singleItemData.note}
+              datetime={mergeTimeAndDate(
+                singleItemData.date,
+                singleItemData.time
+              )}
+            />
           </View>
         </View>
       </Modal>

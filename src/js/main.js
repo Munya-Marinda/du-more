@@ -5,7 +5,35 @@ import { decode as base64_decode, encode as base64_encode } from "base-64";
 const ip = "";
 export const baseURL = `http://${ip}/munya-server/api/du-more/`;
 
-export function formatDate(inputDate) {
+export const colorOptions = [
+  "green",
+  "blue",
+  "red",
+  "yellow",
+  "white",
+  "orange",
+  "purple",
+  "pink",
+  "black",
+  "gray",
+  "cyan",
+  "magenta",
+  "teal",
+  "maroon",
+];
+
+export const initialItemState = {
+  flag: "green",
+  status: "pending",
+  title: "",
+  note: "",
+  date: new Date(),
+  time: new Date(),
+  date_created: new Date(),
+  last_modified: new Date(),
+};
+
+export const formatDate = (inputDate) => {
   const months = [
     "JANUARY",
     "FEBRUARY",
@@ -27,7 +55,72 @@ export function formatDate(inputDate) {
   const year = date.getFullYear();
 
   return `${day} ${month} ${year}`;
-}
+};
+
+export const formatTime = (inputTime) => {
+  inputTime = typeof inputTime === "object" ? inputTime : new Date(inputTime);
+  try {
+    return (
+      inputTime?.toTimeString().split(":")[0] +
+      ":" +
+      inputTime?.toTimeString().split(":")[1]
+    );
+  } catch (error) {
+    return (
+      new Date()?.toTimeString().split(":")[0] +
+      ":" +
+      new Date()?.toTimeString().split(":")[1]
+    );
+  }
+};
+
+export const formatDuration = (seconds) => {
+  const secondsInMinute = 60;
+  const secondsInHour = 3600;
+  const secondsInDay = 86400;
+  const secondsInMonth = 2592000; // Assuming 30 days in a month
+  const secondsInYear = 31536000; // Assuming 365 days in a year
+
+  const years = Math.floor(seconds / secondsInYear);
+  seconds %= secondsInYear;
+
+  const months = Math.floor(seconds / secondsInMonth);
+  seconds %= secondsInMonth;
+
+  const days = Math.floor(seconds / secondsInDay);
+  seconds %= secondsInDay;
+
+  const hours = Math.floor(seconds / secondsInHour);
+  seconds %= secondsInHour;
+
+  const minutes = Math.floor(seconds / secondsInMinute);
+  seconds %= secondsInMinute;
+
+  const secondsRemaining = seconds;
+
+  const parts = [];
+  if (years) parts.push(`${years} year(s)`);
+  if (months) parts.push(`${months} month(s)`);
+  if (days) parts.push(`${days} day(s)`);
+  if (hours) parts.push(`${hours} hour(s)`);
+  if (minutes) parts.push(`${minutes} minute(s)`);
+  if (secondsRemaining) parts.push(`${secondsRemaining} second(s)`);
+
+  return parts.join(", ");
+};
+
+export const mergeTimeAndDate = (date, time) => {
+  date = typeof date === "object" ? date : new Date(date);
+  time = typeof time === "object" ? time : new Date(time);
+  const hours = time.getHours();
+  const minutes = time.getMinutes();
+  const seconds = time.getSeconds();
+  const newDate = new Date(date);
+  newDate.setHours(hours);
+  newDate.setMinutes(minutes);
+  newDate.setSeconds(seconds);
+  return newDate;
+};
 
 export const saveUserData = async (data) => {
   //
@@ -202,6 +295,7 @@ export const DEV_TEST_DATA_PENDING = [
     title: "Task 1-2",
     note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
     date: "2024-01-01T08:06:37.051Z",
+    time: "2024-01-01T23:59:59.051Z",
     date_created: "2024-01-01T08:06:00.001Z",
     last_modified: "2024-01-01T08:07:00.001Z",
   },
@@ -212,6 +306,7 @@ export const DEV_TEST_DATA_PENDING = [
     title: "Task 1-2",
     note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
     date: "2024-01-01T08:06:37.051Z",
+    time: "2024-01-01T23:59:59.051Z",
     date_created: "2024-01-01T08:06:00.001Z",
     last_modified: "2024-01-01T08:07:00.001Z",
   },
@@ -225,6 +320,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     title: "Task 2-2",
     note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
     date: "2024-01-01T08:06:37.051Z",
+    time: "2024-01-01T23:59:59.051Z",
     date_created: "2024-01-01T08:06:00.001Z",
     last_modified: "2024-01-03T08:07:00.001Z",
   },
@@ -235,6 +331,7 @@ export const DEV_TEST_DATA_COMPLETED = [
     title: "Task 1-2",
     note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
     date: "2024-01-01T08:06:37.051Z",
+    time: "2024-01-01T23:59:59.051Z",
     date_created: "2024-01-01T08:06:00.001Z",
     last_modified: "2024-01-01T08:07:00.001Z",
   },
@@ -248,6 +345,7 @@ export const DEV_TEST_DATA_TRASH = [
     title: "Task 3-2",
     note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
     date: "2024-01-01T08:06:37.051Z",
+    time: "2024-01-01T23:59:59.051Z",
     date_created: "2024-01-01T08:06:00.001Z",
     last_modified: "2024-01-01T08:07:00.001Z",
   },
@@ -258,6 +356,7 @@ export const DEV_TEST_DATA_TRASH = [
     title: "Task 1-2",
     note: "Task 1 xxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.",
     date: "2024-01-01T08:06:37.051Z",
+    time: "2024-01-01T23:59:59.051Z",
     date_created: "2024-01-01T08:06:00.001Z",
     last_modified: "2024-01-01T08:07:00.001Z",
   },
