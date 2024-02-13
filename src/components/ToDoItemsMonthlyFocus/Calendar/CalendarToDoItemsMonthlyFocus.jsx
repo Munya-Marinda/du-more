@@ -314,7 +314,6 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                         </View>
                       )}
                     </Pressable>
-
                     {currentDayTasks.map((data, index2) => {
                       return (
                         <Pressable
