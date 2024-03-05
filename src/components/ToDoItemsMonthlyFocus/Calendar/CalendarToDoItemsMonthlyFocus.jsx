@@ -7,10 +7,12 @@ import {
   Dimensions,
   ScrollView,
   Pressable,
+  Modal,
 } from "react-native";
 import CalendarToDoItemsMonthlyFocusEvents from "./CalendarToDoItemsMonthlyFocusEvents";
 import { formatDate } from "../../../js/main";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import UpdateToDoItem from "../../SingleToDoItem/UpdateToDoItem";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -30,21 +32,31 @@ const monthsOrder = [
   "December",
 ];
 
-const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
+const CalendarToDoItemsMonthlyFocus = ({ items, getToDoItems }) => {
   const [yearData, setYearData] = useState(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
   const [currentMonth, setCurrentMonth] = useState(0);
   const [allTaskDates, setAllTaskDates] = useState([]);
   const [currentDayTasks, setCurrentDayTasks] = useState(undefined);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [item, setItem] = useState(null);
+  const [asyncKey, setAsyncKey] = useState("");
+
+  const asyncKeys = {
+    completed: "completedItems",
+    pending: "pendingItems",
+    trash: "trashedItems",
+  };
 
   const handleSelectedDate = (newIndex) => {
     setSelectedDate(newIndex);
   };
 
   useEffect(() => {
-    setYearData(generateDatesForYear());
     handleSetAllTaskDates();
+    setCurrentMonth(new Date().getMonth());
+    setYearData(generateDatesForYear());
   }, []);
 
   const handleSetAllTaskDates = () => {
@@ -100,155 +112,99 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
   }
 
   return (
-    <View
-      style={{
-        width: windowWidth,
-        height: windowHeight,
-        backgroundColor: "white",
-      }}
-    >
-      {yearData ? (
-        <View style={styles.monthContainer}>
-          {/* HIGHER PANEL */}
-          <Text
-            style={{
-              fontSize: 18,
-              color: "gray",
-              fontWeight: "bold",
-              paddingVertical: 20,
-              textAlign: "center",
-              paddingHorizontal: 10,
-              backgroundColor: "white",
-            }}
-          >
-            {currentYear} CALENDAR
-          </Text>
+    <>
+      {/* MODAL */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <UpdateToDoItem
+          item={item}
+          asyncKey={asyncKey}
+          getToDoItems={getToDoItems}
+          setModalVisible={setModalVisible}
+        />
+      </Modal>
+      <View
+        style={{
+          width: windowWidth,
+          height: windowHeight,
+          backgroundColor: "white",
+        }}
+      >
+        {yearData ? (
+          <View style={styles.monthContainer}>
+            {/* HIGHER PANEL */}
+            <Text
+              style={{
+                fontSize: 18,
+                color: "gray",
+                fontWeight: "bold",
+                // paddingVertical: 20,
+                textAlign: "center",
+                paddingHorizontal: 10,
+                backgroundColor: "white",
+              }}
+            >
+              {currentYear}
+            </Text>
 
-          <CalendarToDoItemsMonthlyFocusEvents
-            yearData={yearData}
-            currentYear={currentYear}
-            createArray={createArray}
-            allTaskDates={allTaskDates}
-            selectedDate={selectedDate}
-            currentMonth={currentMonth}
-            handleSelectedDate={handleSelectedDate}
-          />
-
-          {/* LOWER PANEL */}
-          <ScrollView horizontal={true} style={{ marginVertical: 15 }}>
-            {monthsOrder.map((month, i) => {
-              return (
-                <Pressable
-                  key={i}
-                  onPress={() => {
-                    setCurrentMonth(i);
-                    setSelectedDate(1);
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: currentMonth === i ? "black" : "gray",
-                        marginRight: 5,
-                        marginLeft: i === 0 ? 10 : 0,
-                        borderRadius: 100,
-                        fontWeight: "bold",
-                        paddingVertical: 10,
-                        paddingHorizontal: 10,
-                        backgroundColor:
-                          pressed || currentMonth === i ? "gray" : "silver",
-                      }}
-                    >
-                      {month}
-                    </Text>
-                  )}
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-          <View
-            style={{
-              height: 300,
-            }}
-          >
-            <ScrollView>
-              <View>
-                {!currentDayTasks ? (
+            {/* LOWER PANEL */}
+            <ScrollView horizontal={true} style={{ marginVertical: 15 }}>
+              {monthsOrder.map((month, i) => {
+                return (
                   <Pressable
+                    key={i}
                     onPress={() => {
-                      let currentTime = new Date().toISOString().split("T")[1];
-                      setModalVisible(true, {
-                        date: `${currentYear}-${
-                          currentMonth + 1
-                        }-${selectedDate}T${currentTime}`,
-                      });
-                    }}
-                    style={{
-                      height: 300,
-                      backgroundColor: "#ebebeb",
-                      borderTopWidth: 1,
-                      borderTopColor: "gray",
-                      borderBottomWidth: 1,
-                      borderBottomColor: "gray",
-                      width: windowWidth,
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "flex-start",
-                      justifyContent: "center",
+                      setCurrentMonth(i);
+                      setSelectedDate(1);
                     }}
                   >
                     {({ pressed }) => (
-                      <View
+                      <Text
                         style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          opacity: pressed ? 0.2 : 1,
-                          justifyContent: "center",
+                          fontSize: 12,
+                          color: currentMonth === i ? "black" : "gray",
+                          marginRight: 5,
+                          marginLeft: i === 0 ? 10 : 0,
+                          borderRadius: 100,
+                          fontWeight: "bold",
+                          paddingVertical: 10,
+                          paddingHorizontal: 10,
+                          backgroundColor:
+                            pressed || currentMonth === i ? "gray" : "silver",
                         }}
                       >
-                        <View style={{}}>
-                          <Ionicons
-                            size={80}
-                            color="silver"
-                            name={"add-circle"}
-                            style={{
-                              marginTop: 30,
-                            }}
-                          />
-                        </View>
-                        <View
-                          style={{
-                            paddingVertical: 10,
-                            paddingHorizontal: 10,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 16,
-                              color: "black",
-                              fontWeight: "bold",
-                              textAlign: "center",
-                            }}
-                          >
-                            {`${selectedDate} ${monthsOrder[currentMonth]} ${currentYear}`}
-                          </Text>
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              color: "gray",
-                              textAlign: "center",
-                            }}
-                          >
-                            TAP TO ADD NEW TASK
-                          </Text>
-                        </View>
-                      </View>
+                        {month}
+                      </Text>
                     )}
                   </Pressable>
-                ) : (
-                  <>
+                );
+              })}
+            </ScrollView>
+
+            <CalendarToDoItemsMonthlyFocusEvents
+              yearData={yearData}
+              currentYear={currentYear}
+              createArray={createArray}
+              allTaskDates={allTaskDates}
+              selectedDate={selectedDate}
+              currentMonth={currentMonth}
+              handleSelectedDate={handleSelectedDate}
+            />
+
+            <View
+              style={{
+                height: 300,
+              }}
+            >
+              <ScrollView>
+                <View>
+                  {!currentDayTasks ? (
                     <Pressable
                       onPress={() => {
                         let currentTime = new Date()
@@ -261,7 +217,7 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                         });
                       }}
                       style={{
-                        // height: 300,
+                        height: 300,
                         backgroundColor: "#ebebeb",
                         borderTopWidth: 1,
                         borderTopColor: "gray",
@@ -278,34 +234,43 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                         <View
                           style={{
                             display: "flex",
-                            flexDirection: "row",
+                            flexDirection: "column",
                             alignItems: "center",
                             opacity: pressed ? 0.2 : 1,
-                            paddingVertical: 10,
                             justifyContent: "center",
                           }}
                         >
                           <View style={{}}>
                             <Ionicons
-                              size={40}
-                              color="gray"
+                              size={80}
+                              color="silver"
                               name={"add-circle"}
                               style={{
-                                marginRight: 10,
+                                marginTop: 30,
                               }}
                             />
                           </View>
                           <View
                             style={{
-                              paddingVertical: 5,
+                              paddingVertical: 10,
+                              paddingHorizontal: 10,
                             }}
                           >
                             <Text
                               style={{
-                                fontSize: 14,
-                                color: "gray",
-                                textAlign: "left",
+                                fontSize: 16,
+                                color: "black",
                                 fontWeight: "bold",
+                                textAlign: "center",
+                              }}
+                            >
+                              {`${selectedDate} ${monthsOrder[currentMonth]} ${currentYear}`}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                color: "gray",
+                                textAlign: "center",
                               }}
                             >
                               TAP TO ADD NEW TASK
@@ -314,77 +279,171 @@ const CalendarToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
                         </View>
                       )}
                     </Pressable>
-                    {currentDayTasks.map((data, index2) => {
-                      return (
-                        <Pressable
-                          key={index2}
-                          style={{
-                            backgroundColor: "#ebebeb",
-                            borderBottomWidth: 1,
-                            borderBottomColor: "gray",
-                            width: windowWidth,
-                          }}
-                        >
-                          {({ pressed }) => (
+                  ) : (
+                    <>
+                      <Pressable
+                        onPress={() => {
+                          let currentTime = new Date()
+                            .toISOString()
+                            .split("T")[1];
+                          setModalVisible(true, {
+                            date: `${currentYear}-${
+                              currentMonth + 1
+                            }-${selectedDate}T${currentTime}`,
+                          });
+                        }}
+                        style={{
+                          // height: 300,
+                          backgroundColor: "#ebebeb",
+                          borderTopWidth: 1,
+                          borderTopColor: "gray",
+                          borderBottomWidth: 1,
+                          borderBottomColor: "gray",
+                          width: windowWidth,
+                          display: "flex",
+                          flexDirection: "row",
+                          alignItems: "flex-start",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {({ pressed }) => (
+                          <View
+                            style={{
+                              display: "flex",
+                              flexDirection: "row",
+                              alignItems: "center",
+                              opacity: pressed ? 0.2 : 1,
+                              paddingVertical: 10,
+                              justifyContent: "center",
+                            }}
+                          >
+                            <View style={{}}>
+                              <Ionicons
+                                size={40}
+                                color="gray"
+                                name={"add-circle"}
+                                style={{
+                                  marginRight: 10,
+                                }}
+                              />
+                            </View>
                             <View
                               style={{
-                                display: "flex",
-                                flexDirection: "row",
-                                alignItems: "flex-start",
-                                opacity: pressed ? 0.2 : 1,
-                                justifyContent: "flex-start",
+                                paddingVertical: 5,
                               }}
                             >
-                              <View
+                              <Text
                                 style={{
-                                  width: 15,
-                                  height: 65,
-                                  backgroundColor: data?.flag,
+                                  fontSize: 14,
+                                  color: "gray",
+                                  textAlign: "left",
+                                  fontWeight: "bold",
                                 }}
                               >
-                                <Text style={{ color: "transparent" }}>|</Text>
-                              </View>
-                              <View
-                                style={{
-                                  paddingVertical: 10,
-                                  paddingHorizontal: 10,
-                                }}
-                              >
-                                <Text
-                                  style={{
-                                    fontSize: 16,
-                                    color: "black",
-                                    fontWeight: "bold",
-                                  }}
-                                >
-                                  {data.title ? data.title : "no title"}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 12,
-                                    color: "black",
-                                  }}
-                                >
-                                  {data.note ? data.note : "no note"}
-                                </Text>
-                              </View>
+                                TAP TO ADD NEW TASK
+                              </Text>
                             </View>
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </>
-                )}
-              </View>
-            </ScrollView>
+                          </View>
+                        )}
+                      </Pressable>
+                      {currentDayTasks.map((data, index2) => {
+                        return (
+                          <Pressable
+                            key={index2}
+                            style={{
+                              backgroundColor: "#ebebeb",
+                              borderBottomWidth: 1,
+                              borderBottomColor: "gray",
+                              width: windowWidth,
+                            }}
+                            onPress={() => {
+                              setItem(data);
+                              if (data?.status)
+                                setAsyncKey(asyncKeys?.[data?.status]);
+                              setModalVisible(true);
+                            }}
+                          >
+                            {({ pressed }) => (
+                              <View
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "row",
+                                  alignItems: "flex-start",
+                                  opacity: pressed ? 0.2 : 1,
+                                  justifyContent: "flex-start",
+                                }}
+                              >
+                                <View
+                                  style={{
+                                    width: 15,
+                                    height: 75,
+                                    backgroundColor: data?.flag,
+                                  }}
+                                >
+                                  <Text style={{ color: "transparent" }}>
+                                    |
+                                  </Text>
+                                </View>
+                                <View
+                                  style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 10,
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      fontSize: 16,
+                                      color: "black",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    {data.title ? data.title : "no title"}
+                                  </Text>
+                                  <Text
+                                    numberOfLines={2}
+                                    style={{
+                                      fontSize: 12,
+                                      color: "black",
+                                    }}
+                                  >
+                                    {data.note ? data.note : "no note"}
+                                  </Text>
+                                </View>
+                              </View>
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
           </View>
-        </View>
-      ) : (
-        <View>
-          <Text>NOTHING</Text>
-        </View>
-      )}
-    </View>
+        ) : (
+          <View
+            style={{
+              display: "flex",
+              width: windowWidth,
+              height: windowHeight,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                color: "gray",
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              NOTHING TO SHOW
+            </Text>
+          </View>
+        )}
+      </View>
+    </>
   );
 };
 

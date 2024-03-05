@@ -17,29 +17,35 @@ import * as Device from "expo-device";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { StatusBar } from "expo-status-bar";
-import { globalStyles } from "../styles/styles";
-import { useEffect, useState } from "react";
-import { TabCompleted } from "../components/TabCompleted";
-import { TabTrash } from "../components/TabTrash";
-import { TabPending } from "../components/TabPending";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ToDoItem } from "../components/ToDoItem";
 import {
-  DEV_TEST_DATA_COMPLETED,
-  DEV_TEST_DATA_PENDING,
-  DEV_TEST_DATA_TRASH,
-  authenticateUser,
-  clearUserData,
+  controlIconSize_1,
+  controlIconSize_2,
+  globalStyles,
+} from "../styles/styles";
+import { useEffect, useState } from "react";
+import { TasksListView } from "../components/TasksListView";
+import { SingleToDoItem } from "../components/SingleToDoItem/SingleToDoItem";
+import {
+  DEV_ADDTODOITEMS,
+  DEV_DELETETODOITEMS,
+  addToDoItems,
   colorOptions,
+  editSelectedItems,
+  formatDate,
+  formatDate1,
   formatTime,
-  getUserCloudTasks,
+  getToDoItems,
   initialItemState,
   mergeTimeAndDate,
-  syncUserData,
+  openEmailApp,
+  openWebLink,
+  searchItems,
+  shareApp,
 } from "../js/main";
 import WebView from "react-native-webview";
 import PushNotification from "../components/PushNotification";
-// import LoginView from "./LoginView";
+import ToDoItemsMonthlyFocus from "../components/ToDoItemsMonthlyFocus/ToDoItemsMonthlyFocus";
+import TodaysFocus from "../components/TodaysFocus/TodaysFocus";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -56,15 +62,9 @@ export const HomePage = () => {
   const [completed, setCompleted] = useState([]);
   const [pending, setPending] = useState([]);
   const [trash, setTrash] = useState([]);
+  const [todaysItems, setTodaysItems] = useState([]);
   //
-  const [completedSortedByDate, setCompletedSortedByDate] = useState({});
-  const [pendingSortedByDate, setPendingSortedByDate] = useState({});
-  const [trashSortedByDate, setTrashSortedByDate] = useState({});
-  //
-  const [loginView, setLoginView] = useState(false);
-  const [user, setUser] = useState(false);
   const [sortedByDate, setSortedByDate] = useState(false);
-  const [message, setMessage] = useState("null");
   const [modalVisible, setModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -72,10 +72,12 @@ export const HomePage = () => {
   const [searchedItems, setSearchedItems] = useState([]);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
-  const [devMode, setDevMode] = useState(false);
+  const [devMode, setDevMode] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   //
   const [singleItemData, setSingleItemData] = useState(initialItemState);
+
+  const [itemsSortedByDate, setItemsSortedByDate] = useState({});
 
   //
   //
@@ -112,248 +114,16 @@ export const HomePage = () => {
   //
 
   useEffect(() => {
-    getToDoItems();
+    _getToDoItems();
   }, []);
 
-  const fetchUserData = async () => {
-    try {
-      // validate user data stored locally
-      const user = await authenticateUser();
-
-      // if the user is authenticated
-      if (user) {
-        // set user state
-        setUser(user);
-        // sync with server
-        const tasksObj = await syncUserData(user, {
-          completed: completed,
-          pending: pending,
-          trash: trash,
-        });
-
-        if (tasksObj && tasksObj !== undefined && tasksObj !== null) {
-          if (tasksObj?.completed && tasksObj?.pending && tasksObj?.trash) {
-            setCompleted(tasksObj?.completed);
-            setCompletedSortedByDate(
-              sortObjectByMonth(sortTasksByDate(tasksObj?.completed))
-            );
-            setPending(tasksObj?.pending);
-            setPendingSortedByDate(
-              sortObjectByMonth(sortTasksByDate(tasksObj?.pending))
-            );
-            setTrash(tasksObj?.trash);
-            setTrashSortedByDate(
-              sortObjectByMonth(sortTasksByDate(tasksObj?.trash))
-            );
-          }
-        }
-      } else {
-        // if the user is NOT authenticated
-        setUser(false);
-      }
-    } catch (error) {
-      console.error("Error during authentication:", error);
-      setUser(false);
+  const _getToDoItems = async () => {
+    const result = await getToDoItems(activeTab);
+    // console.log("result", result);
+    if (result?.todaysItems && result?.itemsItemsByDate) {
+      setTodaysItems(result?.todaysItems);
+      setItemsSortedByDate(result?.itemsItemsByDate);
     }
-  };
-
-  const formatDate = (date) => {
-    const options = { day: "numeric", month: "short", year: "numeric" };
-    return date.toLocaleDateString(undefined, options);
-  };
-
-  const generateUniqueID = () => {
-    const now = new Date();
-    const year = now.getFullYear(); //
-    const month = now.getMonth() + 1; //
-    const day = now.getDate(); //
-    const timestamp = now.getTime(); //
-
-    return `id-${year}-${month}-${day}-${timestamp}`;
-  };
-
-  const getToDoItems = async () => {
-    //
-    const setNullItem = (key) => {
-      try {
-        AsyncStorage.setItem(key, JSON.stringify([]));
-        getToDoItems();
-      } catch (e) {}
-    };
-    //
-    setTimeout(() => {
-      const keys = ["completedItems", "pendingItems", "trashedItems"];
-      try {
-        AsyncStorage.multiGet(keys, (err, stores) => {
-          let _message = "";
-          stores.map((result, i, store) => {
-            //
-            let key = store[i][0];
-            let value = JSON.parse(store[i][1]);
-            //
-            switch (key) {
-              case "completedItems":
-                if (value !== null && value !== undefined) {
-                  setCompleted(value);
-                  _message +=
-                    value.length + " Completed ToDo Items Were Added. ";
-                  setCompletedSortedByDate(
-                    sortObjectByMonth(sortTasksByDate(value))
-                  );
-                } else {
-                  setCompleted([]);
-                  setNullItem("completedItems");
-                  _message += "No Completed ToDo Items Were Added. ";
-                }
-                break;
-              case "pendingItems":
-                if (value !== null && value !== undefined) {
-                  setPending(value);
-                  _message += value.length + " Pending ToDo Items Were Added. ";
-                  setPendingSortedByDate(
-                    sortObjectByMonth(sortTasksByDate(value))
-                  );
-                } else {
-                  setPending([]);
-                  setNullItem("pendingItems");
-                  _message += "No Pending ToDo Items Were Added. ";
-                }
-                break;
-              case "trashedItems":
-                if (value !== null && value !== undefined) {
-                  setTrash(value);
-                  _message += value.length + " Trashed ToDo Items Were Added. ";
-                  setTrashSortedByDate(
-                    sortObjectByMonth(sortTasksByDate(value))
-                  );
-                } else {
-                  setTrash([]);
-                  setNullItem("trashedItems");
-                  _message += "No Trashed ToDo Items Were Added. ";
-                }
-                break;
-
-              default:
-                break;
-            }
-          });
-          setMessage(_message);
-        });
-      } catch (e) {
-        console.log(e);
-      }
-    }, 200);
-  };
-
-  const addToDoItems = async () => {
-    try {
-      const value = await AsyncStorage.getItem("pendingItems");
-      if (value !== null) {
-        const pendingItems = JSON.parse(value);
-        const newItem = singleItemData;
-        newItem.id = generateUniqueID();
-        newItem.date = mergeTimeAndDate(
-          singleItemData.date,
-          singleItemData.time
-        );
-        pendingItems.unshift(newItem);
-        await AsyncStorage.setItem(
-          "pendingItems",
-          JSON.stringify(pendingItems)
-        );
-        setModalVisible(false);
-        setActiveTab("PENDING");
-        setSingleItemData(initialItemState);
-      }
-    } catch (e) {}
-    getToDoItems();
-  };
-
-  const clearTrash = async () => {
-    try {
-      await AsyncStorage.setItem("trashedItems", JSON.stringify([]));
-    } catch (e) {}
-    getToDoItems();
-  };
-
-  const searchItems = (_value) => {
-    //
-    setSearchTerm(_value);
-    //
-    const jsonData = completed.concat(pending, trash);
-    if (
-      _value !== undefined &&
-      _value !== null &&
-      _value !== "" &&
-      _value.trim().length > 1
-    ) {
-      // Search for matches
-      const matchingItems = jsonData.filter((item) => {
-        // Check title and note
-        return (
-          item.title.toLowerCase().includes(_value.toLowerCase()) ||
-          item.note.toLowerCase().includes(_value.toLowerCase())
-        );
-      });
-      //
-      if (matchingItems.length > 0) {
-        // show the Id
-        const matchingIds = matchingItems.map((item) => item.id);
-        setSearchedItems(matchingItems);
-      } else {
-        setSearchedItems([]);
-      }
-    } else {
-      setSearchedItems([]);
-    }
-  };
-
-  const sortObjectByMonth = (obj) => {
-    // Convert the object to an array of key-value pairs
-    const entries = Object.entries(obj);
-
-    // Sort the array of key-value pairs by month
-    const sortedEntries = entries.sort(([monthA], [monthB]) => {
-      const monthsOrder = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-      return monthsOrder.indexOf(monthA) - monthsOrder.indexOf(monthB);
-    });
-
-    // Convert the sorted array back to an object
-    const sortedObject = Object.fromEntries(sortedEntries);
-
-    return sortedObject;
-  };
-
-  const sortTasksByDate = (tasks) => {
-    return tasks.reduce((result, task) => {
-      const date = new Date(task.date);
-      const month = date.toLocaleString("default", { month: "long" });
-      const day = date.getDate();
-
-      if (!result[month]) {
-        result[month] = {};
-      }
-
-      if (!result[month][day]) {
-        result[month][day] = [];
-      }
-
-      result[month][day].push(task);
-      return result;
-    }, {});
   };
 
   const handleScreenMode = (mode) => {
@@ -377,78 +147,6 @@ export const HomePage = () => {
         selectedItemsID: [...prevScreenMode.selectedItemsID, item],
       }));
     }
-  };
-
-  const editSelectedItems = async (moveTo) => {
-    try {
-      const asyncKeys = {
-        COMPLETED: "completedItems",
-        PENDING: "pendingItems",
-        TRASH: "trashedItems",
-      };
-      const value = await AsyncStorage.getItem(asyncKeys[activeTab]);
-
-      if (value !== null) {
-        const items = JSON.parse(value);
-        const newItems = [];
-        const oldItems = [];
-        //
-        items.forEach((_item) => {
-          if (screenMode.selectedItemsID.indexOf(_item.id) === -1) {
-            newItems.push(_item);
-          } else {
-            _item.status = moveTo.toLowerCase();
-            oldItems.push(_item);
-          }
-        });
-        //
-        switch (asyncKeys[activeTab]) {
-          case "completedItems":
-            setPendingSortedByDate(sortTasksByDate(newItems));
-          case "pendingItems":
-            setCompletedSortedByDate(sortTasksByDate(newItems));
-          case "trashedItems":
-            setTrashSortedByDate(sortTasksByDate(newItems));
-          default:
-            break;
-        }
-        // save the new list of items
-        await AsyncStorage.setItem(
-          asyncKeys[activeTab],
-          JSON.stringify(newItems)
-        );
-        // move the old list of items
-        const newAsyncValue = await AsyncStorage.getItem(asyncKeys[moveTo]);
-        if (newAsyncValue !== null) {
-          const newAsyncItems = JSON.parse(newAsyncValue);
-          const newCombinedItems = [...oldItems, ...newAsyncItems];
-          await AsyncStorage.setItem(
-            asyncKeys[moveTo],
-            JSON.stringify(newCombinedItems)
-          );
-          switch (moveTo) {
-            case "COMPLETED":
-              setPendingSortedByDate(sortTasksByDate(newCombinedItems));
-            case "PENDING":
-              setCompletedSortedByDate(sortTasksByDate(newCombinedItems));
-            case "TRASH":
-              setTrashSortedByDate(sortTasksByDate(newCombinedItems));
-
-            default:
-              break;
-          }
-        }
-
-        //
-        setScreenMode((prevScreenMode) => ({
-          ...prevScreenMode,
-          selectedItemsID: [],
-        }));
-        handleScreenMode("");
-      }
-    } catch (e) {}
-    getToDoItems();
-    setModalVisible(false);
   };
 
   const selectAllItems = () => {
@@ -485,124 +183,27 @@ export const HomePage = () => {
     }
   };
 
-  const deleteSelectedItemsFromTrash = async () => {
-    try {
-      const asyncKeys = {
-        COMPLETED: "completedItems",
-        PENDING: "pendingItems",
-        TRASH: "trashedItems",
-      };
-      const value = await AsyncStorage.getItem(asyncKeys[activeTab]);
-
-      if (value !== null) {
-        const items = JSON.parse(value);
-        const newItems = [];
-        //
-        items.forEach((_item) => {
-          if (screenMode.selectedItemsID.indexOf(_item.id) === -1) {
-            newItems.push(_item);
-          }
-        });
-        //
-        switch (asyncKeys[activeTab]) {
-          case "completedItems":
-            setPendingSortedByDate(sortTasksByDate(newItems));
-          case "pendingItems":
-            setCompletedSortedByDate(sortTasksByDate(newItems));
-          case "trashedItems":
-            setTrashSortedByDate(sortTasksByDate(newItems));
-          default:
-            break;
-        }
-        // save the new list of items
-        await AsyncStorage.setItem(
-          asyncKeys[activeTab],
-          JSON.stringify(newItems)
-        );
-
-        //
-        setScreenMode((prevScreenMode) => ({
-          ...prevScreenMode,
-          selectedItemsID: [],
-        }));
-        handleScreenMode("");
-      }
-    } catch (e) {}
-    getToDoItems();
-    setModalVisible(false);
-  };
-
-  const openWebLink = (link) => {
-    Linking.openURL(link).catch((error) =>
-      console.error("Error opening link:", error)
-    );
-  };
-
-  const openEmailApp = (toEmail, subject, body) => {
-    const encodedSubject = encodeURIComponent(subject);
-    const encodedBody = encodeURIComponent(body);
-    const url = `mailto:${toEmail}?subject=${encodedSubject}&body=${encodedBody}`;
-    Linking.openURL(url).catch((error) =>
-      console.error("Error opening email app:", error)
-    );
-  };
-
-  const handleSetLoginView = (bool) => {
-    setLoginView(bool);
-    fetchUserData();
-  };
-
-  const dev_addToDoItems = async () => {
-    try {
-      await AsyncStorage.setItem(
-        "completedItems",
-        JSON.stringify(DEV_TEST_DATA_COMPLETED)
-      );
-      await AsyncStorage.setItem(
-        "pendingItems",
-        JSON.stringify(DEV_TEST_DATA_PENDING)
-      );
-      await AsyncStorage.setItem(
-        "trashedItems",
-        JSON.stringify(DEV_TEST_DATA_TRASH)
-      );
-      getToDoItems();
-    } catch (e) {}
-  };
-
-  const dev_deleteToDoItems = async () => {
-    try {
-      AsyncStorage.clear();
-      getToDoItems();
-    } catch (e) {}
-  };
-
-  const handleGetUserCloudTask = () => {
-    const _handleGetUserCloudTask = async () => {
-      const tasksObj = await syncUserData(user, {
-        completed: completed,
-        pending: pending,
-        trash: trash,
-      });
-
-      if (tasksObj && tasksObj !== undefined && tasksObj !== null) {
-        if (tasksObj?.completed && tasksObj?.pending && tasksObj?.trash) {
-          setCompleted(tasksObj?.completed);
-          setCompletedSortedByDate(
-            sortObjectByMonth(sortTasksByDate(tasksObj?.completed))
-          );
-          setPending(tasksObj?.pending);
-          setPendingSortedByDate(
-            sortObjectByMonth(sortTasksByDate(tasksObj?.pending))
-          );
-          setTrash(tasksObj?.trash);
-          setTrashSortedByDate(
-            sortObjectByMonth(sortTasksByDate(tasksObj?.trash))
-          );
-        }
-      }
+  const _editSelectedItems = (key) => {
+    const foo = async () => {
+      await editSelectedItems(key, activeTab, screenMode.selectedItemsID);
+      //
+      handleScreenMode("");
+      setScreenMode((prevScreenMode) => ({
+        ...prevScreenMode,
+        selectedItemsID: [],
+      }));
+      setModalVisible(false);
+      _getToDoItems();
     };
-    _handleGetUserCloudTask();
+    foo();
+  };
+
+  const _searchItems = (value) => {
+    setSearchTerm(value);
+    const foo = async () => {
+      setSearchedItems(await searchItems(value));
+    };
+    foo();
   };
 
   //
@@ -673,34 +274,16 @@ export const HomePage = () => {
   //
   //
   return (
-    <View style={{ position: "relative" }}>
-      {/* ADD NEW TASK ICON */}
-      {screenMode.value !== "edit" && (
-        <TouchableOpacity
-          style={{ position: "absolute", bottom: 30, right: 30, zIndex: 999 }}
-          onPress={() => {
-            setModalVisible(true);
-          }}
-        >
-          <Ionicons name="add-circle" size={50} color="grey" />
-        </TouchableOpacity>
-      )}
-
+    <View style={{ position: "relative", flex: 1 }}>
       <StatusBar hidden={false} />
 
-      {/* LOGIN MODAL */}
-      {/* <LoginView
-        handleSetLoginView={handleSetLoginView}
-        loginView={loginView}
-      /> */}
-
-      {/* BURGER MENU MODAL */}
+      {/* MENU MODAL */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={showBurgerMenu}
         onRequestClose={() => {
-          setShowBurgerMenu(!showBurgerMenu);
+          setShowBurgerMenu(false);
         }}
       >
         <Pressable
@@ -725,135 +308,6 @@ export const HomePage = () => {
             }}
           >
             <>
-              {/* CLOUD FEATURES */}
-              {/* <Text
-                style={[
-                  {
-                    fontSize: 12,
-                    paddingVertical: 5,
-                    paddingHorizontal: 20,
-                    backgroundColor: "#e1e1e1",
-                  },
-                ]}
-              >
-                CLOUD
-              </Text>
-              <View
-                style={{
-                  paddingVertical: 20,
-                  paddingHorizontal: 20,
-                  width: windowWidth * 1,
-                  backgroundColor: "white",
-                  borderBottomColor: "gray",
-                  borderBottomWidth: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <View
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Ionicons
-                    style={{
-                      marginRight: 10,
-                    }}
-                    name={!user ? "cloud-offline" : "cloud"}
-                    size={30}
-                    color={!user ? "black" : "#0066a4"}
-                  />
-                  <Pressable
-                    onPress={() => {
-                      if (user) {
-                        handleGetUserCloudTask();
-                      } else {
-                        setLoginView(true);
-                      }
-                    }}
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "flex-start",
-                    }}
-                  >
-                    {({ pressed }) => (
-                      <View
-                        style={{
-                          opacity: pressed ? 0.5 : 1,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 18,
-                            fontWeight: "bold",
-                            color: "#0066a4",
-                          }}
-                        >
-                          {!user ? "SIGN IN" : "CONNECTED"}
-                        </Text>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {!user
-                            ? "Can't Sync To Cloud. You're Not Signed In"
-                            : `Signed In as ${user?.username}`}
-                        </Text>
-                      </View>
-                    )}
-                  </Pressable>
-                </View>
-                <Pressable
-                  onPress={() => {
-                    Alert.alert(
-                      "Log Out",
-                      "Are you sure you want to logout? You won't be able to backup your account data.",
-                      [
-                        {
-                          text: "No",
-                          onPress: () => {
-                            return false;
-                          },
-                          style: "cancel",
-                        },
-                        {
-                          text: "YES",
-                          onPress: () => {
-                            setUser(false);
-                            clearUserData();
-                            setModalVisible(false);
-                          },
-                        },
-                      ]
-                    );
-                  }}
-                >
-                  {({ pressed }) => (
-                    <>
-                      {user && (
-                        <Ionicons
-                          style={{
-                            opacity: pressed ? 0.4 : 1,
-                          }}
-                          name={"log-out-outline"}
-                          size={30}
-                          color="black"
-                        />
-                      )}
-                    </>
-                  )}
-                </Pressable>
-              </View> */}
-
               {/* FILTER */}
               <Text
                 style={[
@@ -939,7 +393,6 @@ export const HomePage = () => {
               </Pressable>
               <Pressable
                 onPress={() => {
-                  searchItems("");
                   setSearchTerm("");
                   setShowBurgerMenu(false);
                   setSearchModalVisible(true);
@@ -952,22 +405,20 @@ export const HomePage = () => {
                 }}
               >
                 {({ pressed }) => (
-                  <>
-                    <Text
-                      style={[
-                        {
-                          opacity: pressed ? 0.5 : 1,
-                          backgroundColor: "white",
-                          borderTopColor: "gray",
-                          borderTopWidth: 1,
-                        },
-                        globalStyles.burgerMenuButton,
-                      ]}
-                    >
-                      <Ionicons name="search" size={20} color="black" />
-                      {"  "} Search Tasks
-                    </Text>
-                  </>
+                  <Text
+                    style={[
+                      {
+                        opacity: pressed ? 0.5 : 1,
+                        backgroundColor: "white",
+                        borderTopColor: "gray",
+                        borderTopWidth: 1,
+                      },
+                      globalStyles.burgerMenuButton,
+                    ]}
+                  >
+                    <Ionicons name="search" size={20} color="black" />
+                    {"  "} Search Tasks
+                  </Text>
                 )}
               </Pressable>
               <Pressable
@@ -1017,26 +468,6 @@ export const HomePage = () => {
               </Text>
               <Pressable
                 onPress={() => {
-                  // setShowBurgerMenu(false);
-                  const shareApp = async () => {
-                    try {
-                      const result = await Share.share({
-                        message:
-                          "Hey.\nCheck out this cool To Do app called *Du-More*. It has increased my productivity ALOT! 💯.\n\nhttps://play.google.com/store/apps/details?id=com.munya_m.dumore",
-                      });
-                      if (result.action === Share.sharedAction) {
-                        if (result.activityType) {
-                          // shared with activity type of result.activityType
-                        } else {
-                          // shared
-                        }
-                      } else if (result.action === Share.dismissedAction) {
-                        // dismissed
-                      }
-                    } catch (error) {
-                      Alert.alert(error.message);
-                    }
-                  };
                   shareApp();
                 }}
                 style={{
@@ -1092,7 +523,6 @@ export const HomePage = () => {
               </Pressable>
               <Pressable
                 onPress={() => {
-                  // setShowBurgerMenu(false);
                   openEmailApp(
                     "munyathedev@gmail.com",
                     "DuMore App - User Feedback",
@@ -1221,6 +651,7 @@ export const HomePage = () => {
                 )}
               </Pressable>
 
+              {/* DEVELOPER OPTIONS */}
               {devMode && (
                 <>
                   <Text
@@ -1237,9 +668,10 @@ export const HomePage = () => {
                     Developer
                   </Text>
                   <Pressable
-                    onPress={() => {
+                    onPress={async () => {
                       setShowBurgerMenu(false);
-                      dev_addToDoItems();
+                      await DEV_ADDTODOITEMS();
+                      _getToDoItems();
                     }}
                   >
                     {({ pressed }) => (
@@ -1258,9 +690,10 @@ export const HomePage = () => {
                     )}
                   </Pressable>
                   <Pressable
-                    onPress={() => {
+                    onPress={async () => {
                       setShowBurgerMenu(false);
-                      dev_deleteToDoItems();
+                      await DEV_DELETETODOITEMS();
+                      _getToDoItems();
                     }}
                   >
                     {({ pressed }) => (
@@ -1318,9 +751,8 @@ export const HomePage = () => {
                     paddingVertical: 15,
                     textAlign: "center",
                     paddingHorizontal: 20,
-                    backgroundColor: "gray",
+                    backgroundColor: pressed ? "silver" : "gray",
                     width: windowWidth * 1,
-                    opacity: pressed ? 0.5 : 1,
                   },
                 ]}
               >
@@ -1438,8 +870,8 @@ export const HomePage = () => {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          setModalVisible(!modalVisible);
-          setSingleItemData(initialItemState);
+          // setModalVisible(!modalVisible);
+          // setSingleItemData(initialItemState);
         }}
       >
         <View style={globalStyles.modal_parent_1}>
@@ -1526,7 +958,7 @@ export const HomePage = () => {
                       />
                     )}
                     <Text style={globalStyles.modal_button_2}>
-                      {formatDate(singleItemData.date)}
+                      {formatDate1(singleItemData.date)}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -1649,7 +1081,7 @@ export const HomePage = () => {
             >
               <Text style={globalStyles.modal_button_1}>CANCEL</Text>
             </TouchableOpacity>
-            <PushNotification
+            {/* <PushNotification
               title={"ADD"}
               addToDoItems={addToDoItems}
               taskTitle={singleItemData.title}
@@ -1658,7 +1090,19 @@ export const HomePage = () => {
                 singleItemData.date,
                 singleItemData.time
               )}
-            />
+            /> */}
+
+            <TouchableOpacity
+              onPress={async () => {
+                await addToDoItems(singleItemData);
+                _getToDoItems();
+                setModalVisible(false);
+                setActiveTab("PENDING");
+                setSingleItemData(initialItemState);
+              }}
+            >
+              <Text style={globalStyles.modal_button_1}>ADD</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1670,6 +1114,7 @@ export const HomePage = () => {
         visible={searchModalVisible}
         onRequestClose={() => {
           setSearchModalVisible(!searchModalVisible);
+          setSearchedItems([]);
         }}
       >
         <View style={globalStyles.search_modal_parent_1}>
@@ -1678,8 +1123,7 @@ export const HomePage = () => {
             <TextInput
               style={globalStyles.search_modal_text_input}
               onChangeText={(value) => {
-                value;
-                searchItems(value);
+                _searchItems(value);
               }}
               value={searchTerm}
               placeholder="Search ..."
@@ -1694,7 +1138,7 @@ export const HomePage = () => {
               <>
                 {searchedItems.map((item, index) => {
                   return (
-                    <ToDoItem
+                    <SingleToDoItem
                       item={item}
                       key={index}
                       index={index}
@@ -1722,6 +1166,7 @@ export const HomePage = () => {
             <TouchableOpacity
               onPress={() => {
                 setSearchModalVisible(false);
+                setSearchedItems([]);
               }}
             >
               <Text style={globalStyles.modal_button_1}>CLOSE</Text>
@@ -1730,130 +1175,51 @@ export const HomePage = () => {
         </View>
       </Modal>
 
-      {/* TOPBAR */}
+      {/* TOPBAR | Today's Focus */}
       {screenMode.value !== "edit" ? (
-        <>
-          <View style={[globalStyles.homePage_top_parent_1]}>
-            {/* <Text
-              style={{ fontWeight: "bold", fontSize: 20, textAlign: "center" }}
-            >
-              {activeTab}
-            </Text> */}
-
-            <Pressable
+        <View
+          style={{
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+            backgroundColor: "#003153",
+          }}
+        >
+          <View style={globalStyles.homePage_top_parent_1}>
+            {/* <Pressable
               onPress={() => {
-                searchItems("");
                 setSearchTerm("");
                 setSearchModalVisible(true);
               }}
-              style={globalStyles.homePage_search_button}
             >
               {({ pressed }) => (
                 <Ionicons
                   name="search"
                   size={25}
-                  color={!pressed ? "gray" : "rgba(0,0,0,0.4)"}
+                  color={!pressed ? "white" : "rgba(0,0,0,0.4)"}
                 />
               )}
-            </Pressable>
+            </Pressable> */}
 
-            <View
+            <Text
               style={{
-                // width: windowWidth * 0.5,
-                // marginTop: 10,
-                display: "flex",
-                // marginBottom: 20,
-                alignItems: "center",
-                flexDirection: "row",
-                justifyContent: "center",
-                // backgroundColor: "yellow",
+                fontSize: 16,
+                marginLeft: 10,
+                color: "white",
+                letterSpacing: 2,
+                fontWeight: "bold",
+                textAlign: "center",
               }}
             >
-              <Pressable
-                onPress={() => {
-                  setActiveTab("PENDING");
-                }}
-              >
-                {({ pressed }) => (
-                  <Text
-                    style={[
-                      globalStyles.tab_control_buttons,
-                      {
-                        opacity: pressed ? 0.3 : 1,
-                        backgroundColor:
-                          activeTab !== "PENDING" ? "transparent" : "silver",
-                      },
-                    ]}
-                  >
-                    PENDING: {pending.length}
-                  </Text>
-                )}
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  setActiveTab("COMPLETED");
-                }}
-              >
-                {({ pressed }) => (
-                  <Text
-                    style={[
-                      globalStyles.tab_control_buttons,
-                      {
-                        opacity: pressed ? 0.3 : 1,
-                        backgroundColor:
-                          activeTab !== "COMPLETED" ? "transparent" : "silver",
-                      },
-                    ]}
-                  >
-                    COMPLETED: {completed.length}
-                  </Text>
-                )}
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  setActiveTab("TRASH");
-                }}
-              >
-                {({ pressed }) => (
-                  <Text
-                    style={[
-                      globalStyles.tab_control_buttons,
-                      {
-                        opacity: pressed ? 0.3 : 1,
-                        backgroundColor:
-                          activeTab !== "TRASH" ? "transparent" : "silver",
-                      },
-                    ]}
-                  >
-                    TRASH: {trash.length}
-                  </Text>
-                )}
-              </Pressable>
-            </View>
-
-            <Pressable
-              onPress={() => {
-                setShowBurgerMenu(!showBurgerMenu);
-              }}
-              style={[
-                globalStyles.homePage_search_button,
-                {
-                  borderRadius: 50,
-                  paddingHorizontal: 2,
-                },
-              ]}
-            >
-              {({ pressed }) => (
-                <Ionicons
-                  name="menu-outline"
-                  size={35}
-                  color={"gray"}
-                  style={{ opacity: pressed ? 0.4 : 1 }}
-                />
-              )}
-            </Pressable>
+              TODAY'S FOCUS
+            </Text>
           </View>
-        </>
+          <TodaysFocus
+            todaysItems={todaysItems}
+            getToDoItems={getToDoItems}
+            screenMode={screenMode}
+            setModalVisible={setModalVisible}
+          />
+        </View>
       ) : (
         <>
           <View style={globalStyles.homePage_top_parent_1}>
@@ -1966,7 +1332,7 @@ export const HomePage = () => {
                           {
                             text: "YES",
                             onPress: () => {
-                              editSelectedItems("PENDING");
+                              _editSelectedItems("PENDING");
                             },
                           },
                         ]
@@ -2007,7 +1373,7 @@ export const HomePage = () => {
                           {
                             text: "YES",
                             onPress: () => {
-                              editSelectedItems("COMPLETED");
+                              _editSelectedItems("COMPLETED");
                             },
                           },
                         ]
@@ -2048,7 +1414,7 @@ export const HomePage = () => {
                           {
                             text: "YES",
                             onPress: () => {
-                              editSelectedItems("TRASH");
+                              _editSelectedItems("TRASH");
                             },
                           },
                         ]
@@ -2074,150 +1440,108 @@ export const HomePage = () => {
       )}
 
       {/* TABS */}
-      {activeTab === "PENDING" && (
-        <TabPending
-          setModalVisible={(bool, options) => {
-            setModalVisible(bool);
-            if (options?.date) {
-              try {
-                let date = new Date(options?.date);
-                setSingleItemData({
-                  ...singleItemData,
-                  date: date,
-                  date_created: date,
-                  last_modified: date,
-                });
-              } catch (error) {
-                console.error(error);
-              }
+      <TasksListView
+        setModalVisible={(bool, options) => {
+          setModalVisible(bool);
+          if (options?.date) {
+            try {
+              let date = new Date(options?.date);
+              setSingleItemData({
+                ...singleItemData,
+                date: date,
+                date_created: date,
+                last_modified: date,
+              });
+            } catch (error) {
+              console.error(error);
             }
+          }
+        }}
+        screenMode={{
+          handleScreenMode: handleScreenMode,
+          selectedItemsIds: selectedItemsIds,
+          value: screenMode.value,
+          selectedItemsID: screenMode.selectedItemsID,
+        }}
+        todaysItems={todaysItems}
+        activeTab={activeTab}
+        itemsSortedByDate={itemsSortedByDate}
+      />
+
+      {/* ADD NEW TASK ICON */}
+      {screenMode.value !== "edit" && (
+        <View
+          style={{
+            right: 0,
+            bottom: 0,
+            zIndex: 999,
+            display: "flex",
+            width: windowWidth,
+            paddingVertical: 10,
+            position: "absolute",
+            paddingHorizontal: 5,
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "center",
+            // borderTopLeftRadius: 200,
+            // borderTopRightRadius: 200,
+            backgroundColor: "#003153",
+            maxHeight: windowHeight * 0.2,
+            transform: "translateY(25px)",
           }}
-          screenMode={{
-            handleScreenMode: handleScreenMode,
-            selectedItemsIds: selectedItemsIds,
-            value: screenMode.value,
-            selectedItemsID: screenMode.selectedItemsID,
-          }}
-          getToDoItems={getToDoItems}
-          sortedByDate={sortedByDate}
-          items={pendingSortedByDate}
-        />
-      )}
-      {activeTab === "COMPLETED" && (
-        <TabCompleted
-          screenMode={{
-            handleScreenMode: handleScreenMode,
-            selectedItemsIds: selectedItemsIds,
-            value: screenMode.value,
-            selectedItemsID: screenMode.selectedItemsID,
-          }}
-          getToDoItems={getToDoItems}
-          sortedByDate={sortedByDate}
-          items={completedSortedByDate}
-        />
-      )}
-      {activeTab === "TRASH" && (
-        <>
-          <View
-            style={{
-              display: "flex",
-              alignItems: "center",
-              flexDirection: "row",
-              justifyContent: "space-between",
+        >
+          <Pressable
+            onPress={() => {
+              setSearchTerm("");
+              setSearchModalVisible(true);
+            }}
+            style={globalStyles.bottomControlButton_1}
+          >
+            {({ pressed }) => (
+              <Ionicons
+                name="search"
+                size={controlIconSize_1}
+                color="white"
+                style={{ opacity: pressed ? 0.4 : 1 }}
+              />
+            )}
+          </Pressable>
+          <Pressable
+            style={globalStyles.bottomControlButton}
+            onPress={() => {
+              setModalVisible(true);
             }}
           >
-            <Pressable
-              style={{
-                width: 20,
-                height: 20,
-                backgroundColor: "transparent",
-              }}
-              onLongPress={() => {
-                if (!devMode) {
-                  Alert.alert(
-                    "SWITCH TO DEVELOPER MODE?",
-                    "By turning on developer mode you will lose your current data but gain additional features used when testing this application. Are you sure?",
-                    [
-                      {
-                        text: "No",
-                        onPress: () => {
-                          return false;
-                        },
-                        style: "cancel",
-                      },
-                      {
-                        text: "YES",
-                        onPress: () => {
-                          ToastAndroid.show(
-                            "Developer Mode Actived",
-                            ToastAndroid.LONG,
-                            1000
-                          );
-                          setDevMode(true);
-                        },
-                      },
-                    ]
-                  );
-                } else {
-                  ToastAndroid.show(
-                    "Developer Mode Already Actived",
-                    ToastAndroid.LONG,
-                    1000
-                  );
-                }
-              }}
-            ></Pressable>
-            {trash.length > 0 && screenMode.value !== "edit" && (
-              <Pressable
-                onPress={() => {
-                  Alert.alert(
-                    "Clear Trash?",
-                    "All tasks in the trash will be deleted.",
-                    [
-                      {
-                        text: "No",
-                        onPress: () => {
-                          return false;
-                        },
-                        style: "cancel",
-                      },
-                      {
-                        text: "Yes",
-                        onPress: () => {
-                          clearTrash();
-                        },
-                      },
-                    ]
-                  );
-                }}
-              >
-                {({ pressed }) => (
-                  <Text
-                    style={{
-                      color: "red",
-                      paddingVertical: 5,
-                      paddingHorizontal: 10,
-                      opacity: pressed ? 0.5 : 1,
-                    }}
-                  >
-                    Clear Trash
-                  </Text>
-                )}
-              </Pressable>
+            {({ pressed }) => (
+              <Ionicons
+                name="add-circle"
+                size={controlIconSize_2}
+                color={"white"}
+                style={{ opacity: pressed ? 0.4 : 1 }}
+              />
             )}
-          </View>
-          <TabTrash
-            screenMode={{
-              handleScreenMode: handleScreenMode,
-              selectedItemsIds: selectedItemsIds,
-              value: screenMode.value,
-              selectedItemsID: screenMode.selectedItemsID,
-            }}
+          </Pressable>
+          {/* <ToDoItemsMonthlyFocus
+            items={itemsSortedByDate}
             getToDoItems={getToDoItems}
-            sortedByDate={sortedByDate}
-            items={trashSortedByDate}
-          />
-        </>
+            setModalVisible={setModalVisible}
+          /> */}
+          <Pressable
+            style={globalStyles.bottomControlButton_1}
+            onPress={() => {
+              setShowBurgerMenu(!showBurgerMenu);
+            }}
+          >
+            {({ pressed }) => (
+              <Ionicons
+                name="menu"
+                size={controlIconSize_1}
+                color={"white"}
+                style={{ opacity: pressed ? 0.4 : 1 }}
+              />
+            )}
+          </Pressable>
+        </View>
       )}
     </View>
   );

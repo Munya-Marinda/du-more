@@ -4,18 +4,20 @@ const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 const _cardWidth = windowWidth * 0.95;
+const _cardWidthToday = windowWidth * 0.4;
+export const controlIconSize_1 = 25;
+export const controlIconSize_2 = 35;
 
 export const globalStyles = StyleSheet.create({
   homePage_top_parent_1: {
     display: "flex",
     width: windowWidth,
+    paddingVertical: 10,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 15,
-    marginBottom: 20,
-    // paddingVertical: 5,
-    // backgroundColor: "green",
-    justifyContent: "space-between",
+    justifyContent: "center",
+    maxHeight: windowHeight * 0.1,
   },
   homePage_top_header_1: {
     fontSize: 10,
@@ -23,13 +25,13 @@ export const globalStyles = StyleSheet.create({
     fontWeight: "bold",
   },
   homePage_items_scrollView_1: {
+    paddingTop: 15,
     width: windowWidth,
-    // backgroundColor: "green",
+    backgroundColor: "white",
+    maxHeight: windowHeight * 1,
   },
-  homePage_search_button: {
-    // position: "absolute",
-    // right: 40,
-    // bottom: 25,
+  homePage_items_scrollView_viewChild_1: {
+    paddingBottom: windowHeight * 0.1,
   },
   //
   //
@@ -77,11 +79,9 @@ export const globalStyles = StyleSheet.create({
   item_container_1: {
     display: "flex",
     marginBottom: 15,
-    // paddingVertical: 10,
     borderRadius: 10,
     width: _cardWidth,
     flexDirection: "row",
-    // position: "relative",
     alignItems: "center",
     backgroundColor: "#ebebeb",
     justifyContent: "flex-start",
@@ -91,23 +91,13 @@ export const globalStyles = StyleSheet.create({
     minHeight: 50,
     borderTopLeftRadius: 5,
     borderBottomLeftRadius: 5,
-    // height: 20,
-    // marginLeft: 10,
-    // borderWidth: 2,
-    // borderRadius: 20,
   },
   item_flag_text_1: {
     color: "transparent",
   },
   item_info_parent_1: {
     marginLeft: 15,
-    // minHeight: 60,
     width: _cardWidth * 0.8,
-  },
-  item_status_text_1_parent: {
-    // top: 7,
-    // right: 5,
-    // position: "absolute",
   },
   item_status_text_1: {
     fontSize: 12,
@@ -129,12 +119,79 @@ export const globalStyles = StyleSheet.create({
     fontSize: 12,
     color: "black",
   },
-  item_date_text_1_parent: {
-    // bottom: 10,
-    // right: 10,
-    // position: "absolute",
-  },
   item_date_text_1: {
+    fontSize: 10,
+    color: "black",
+  },
+  item_indicator: {
+    marginRight: 5,
+    height: 20,
+    width: 20,
+    borderRadius: 50,
+  },
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  // TODAY'S ITEM CARD
+  item_parent_2: {
+    borderRadius: 10,
+    marginLeft: 10,
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    backgroundColor: "white",
+    width: _cardWidthToday,
+  },
+  item_container_2: {
+    // display: "flex",
+    marginBottom: 15,
+    borderRadius: 10,
+    // alignItems: "center",
+    // flexDirection: "row",
+    width: _cardWidthToday,
+    // backgroundColor: "#ebebeb",
+    // justifyContent: "flex-start",
+  },
+  item_flag_2: {
+    minHeight: 10,
+    width: _cardWidthToday,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+  },
+  item_flag_text_2: {
+    color: "transparent",
+  },
+  item_info_parent_2: {
+    marginTop: 10,
+    marginHorizontal: 10,
+    width: _cardWidthToday * 0.8,
+  },
+  item_status_text_2: {
+    fontSize: 12,
+    marginRight: 5,
+    display: "none",
+  },
+  item_title_text_2_parent: {
+    marginBottom: 2,
+  },
+  item_title_text_2: {
+    fontSize: 14,
+    color: "black",
+    fontWeight: "bold",
+  },
+  item_note_text_2_parent: {
+    marginBottom: 5,
+  },
+  item_note_text_2: {
+    fontSize: 12,
+    color: "black",
+  },
+  item_date_text_2: {
     fontSize: 10,
     color: "black",
   },
@@ -254,6 +311,30 @@ export const globalStyles = StyleSheet.create({
     marginHorizontal: 7,
     borderColor: "silver",
     paddingHorizontal: 10,
+  },
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  // BOTTOM CONTROL BUTTON
+  bottomControlButton: {
+    borderRadius: 100,
+    marginHorizontal: 7,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: "#003153",
+    transform: "translateY(-20px)",
+  },
+  bottomControlButton_1: {
+    borderRadius: 100,
+    marginHorizontal: 7,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    // backgroundColor: "#003153",
+    transform: "translateY(-20px)",
   },
   //
   //

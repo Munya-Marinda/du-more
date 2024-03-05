@@ -3,6 +3,7 @@ import CalendarToDoItemsMonthlyFocus from "./Calendar/CalendarToDoItemsMonthlyFo
 
 export default function ModalToDoItemsMonthlyFocus({
   items,
+  getToDoItems,
   setModalVisible,
   showCalendarModal,
   handleShowCalendarModal,
@@ -18,6 +19,7 @@ export default function ModalToDoItemsMonthlyFocus({
     >
       <CalendarToDoItemsMonthlyFocus
         items={items}
+        getToDoItems={getToDoItems}
         setModalVisible={setModalVisible}
       />
     </Modal>

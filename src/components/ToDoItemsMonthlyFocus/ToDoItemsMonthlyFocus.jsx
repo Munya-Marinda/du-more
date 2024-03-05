@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable, Dimensions } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ModalToDoItemsMonthlyFocus from "./ModalToDoItemsMonthlyFocus";
+import { controlIconSize_1, globalStyles } from "../../styles/styles";
 
-const ToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
-  const windowWidth = Dimensions.get("window").width;
-  const windowHeight = Dimensions.get("window").height;
+const ToDoItemsMonthlyFocus = ({ items, setModalVisible, getToDoItems }) => {
   const [showCalendarModal, setShowCalendarModal] = useState(false);
 
   // Get the current year
@@ -29,47 +28,24 @@ const ToDoItemsMonthlyFocus = ({ items, setModalVisible }) => {
     <>
       <ModalToDoItemsMonthlyFocus
         items={items}
+        getToDoItems={getToDoItems}
+        setModalVisible={setModalVisible}
         showCalendarModal={showCalendarModal}
         handleShowCalendarModal={handleShowCalendarModal}
-        setModalVisible={setModalVisible}
       />
-      <View
-        style={{
-          display: "flex",
-          alignItems: "center",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
+      <Pressable
+        style={globalStyles.bottomControlButton_1}
+        onPress={handleShowCalendarModal}
       >
-        <Pressable onPress={handleShowCalendarModal}>
-          {({ pressed }) => (
-            <View
-              style={{
-                // width: 45,
-                height: 25,
-                borderWidth: 1,
-                display: "flex",
-                borderRadius: 100,
-                alignItems: "center",
-                borderColor: "silver",
-                paddingHorizontal: 10,
-                flexDirection: "column",
-                justifyContent: "center",
-                transform: "translateY(-12px)",
-                backgroundColor: pressed ? "gray" : "silver",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 10,
-                }}
-              >
-                OPEN CALENDAR
-              </Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+        {({ pressed }) => (
+          <Ionicons
+            size={controlIconSize_1}
+            name="calendar"
+            color={"white"}
+            style={{ opacity: pressed ? 0.4 : 1 }}
+          />
+        )}
+      </Pressable>
     </>
   );
 };

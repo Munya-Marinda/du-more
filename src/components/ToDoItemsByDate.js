@@ -1,6 +1,6 @@
 import { View, Text, Dimensions } from "react-native";
-import { ToDoItem } from "./ToDoItem";
-import { useEffect } from "react";
+import { SingleToDoItem } from "./SingleToDoItem/SingleToDoItem";
+import { globalStyles } from "../styles/styles";
 
 export const ToDoItemsByDate = ({
   items,
@@ -12,10 +12,12 @@ export const ToDoItemsByDate = ({
   //
   return (
     <>
-      {!sortedByDate ? (
-        <>
+      {Object.keys(items)?.length > 0 && (
+        <View style={globalStyles.homePage_items_scrollView_viewChild_1}>
           {Object.keys(items).map((month, index) => {
-            //
+            const itemsForThisMonth = sortedByDate
+              ? Object.keys(items[month]).reverse()
+              : Object.keys(items[month]);
             return (
               <View
                 key={index}
@@ -34,13 +36,12 @@ export const ToDoItemsByDate = ({
                 >
                   {month}
                 </Text>
-                {Object.keys(items[month]).map((day, index) => {
-                  //
+                {itemsForThisMonth.map((day, index) => {
                   return (
                     <View key={index}>
                       {items[month][day].map((item, index) => {
                         return (
-                          <ToDoItem
+                          <SingleToDoItem
                             item={item}
                             key={index}
                             index={index}
@@ -56,55 +57,7 @@ export const ToDoItemsByDate = ({
               </View>
             );
           })}
-        </>
-      ) : (
-        <>
-          {Object.keys(items)
-          .map((month, index) => {
-            //
-            return (
-              <View
-                key={index}
-                style={{
-                  marginBottom: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: "bold",
-                    color: "gray",
-                    marginLeft: 10,
-                    marginBottom: 10,
-                  }}
-                >
-                  {month}
-                </Text>
-                {Object.keys(items[month])
-                  .reverse()
-                  .map((day, index) => {
-                    //
-                    return (
-                      <View key={index}>
-                        {items[month][day].reverse().map((item, index) => {
-                          return (
-                            <ToDoItem
-                              item={item}
-                              key={index}
-                              index={index}
-                              screenMode={screenMode}
-                              asyncKey={asyncKey}
-                              getToDoItems={getToDoItems}
-                            />
-                          );
-                        })}
-                      </View>
-                    );
-                  })}
-              </View>
-            );
-          })}
-        </>
+        </View>
       )}
     </>
   );

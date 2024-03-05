@@ -1,5 +1,12 @@
-import { View, Text, StyleSheet, Dimensions, Pressable } from "react-native";
-import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+  ScrollView,
+} from "react-native";
+import React, { useState } from "react";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -11,13 +18,23 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
   allTaskDates,
   currentMonth,
   selectedDate,
+  getToDoItems,
   handleSelectedDate,
 }) {
   return (
     <View>
-      <View>
-        {[""].map((data, index) => {
+      <ScrollView
+        // ref={scrollViewRef}
+        horizontal={true}
+        snapToInterval={windowWidth} // Width of each item
+        snapToAlignment="center" // Align items to the center
+        contentContainerStyle={{
+          alignItems: "center",
+        }}
+      >
+        {["", ""].map((data, index) => {
           // Compute previous month end number and length outside the loop
+          const prevMonthDaysCount = yearData[currentMonth - 1]?.maxDays || 0;
           const prevMonthEndNumber =
             yearData[currentMonth]?.startingWeekDayNumber || 0;
           const length = yearData[currentMonth]?.maxDays || 0;
@@ -32,7 +49,7 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
           const dynamicArray = createArray(length, defaultValue);
 
           return (
-            <View style={{ marginTop: 10 }} key={index}>
+            <View style={{ marginRight: 0 }} key={index}>
               <Text style={styles.monthText}>
                 {yearData[currentMonth]?.month[0]}
               </Text>
@@ -46,7 +63,10 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
                           { color: pressed ? "silver" : "gray" },
                         ]}
                       >
-                        {prevMonthEndNumber - emptyDaysArray.length + index + 1}
+                        {prevMonthDaysCount - prevMonthEndNumber + index + 1 !==
+                        0
+                          ? prevMonthDaysCount - prevMonthEndNumber + index + 1
+                          : ""}
                       </Text>
                     )}
                   </Pressable>
@@ -54,7 +74,7 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
                 {dynamicArray.map((day, index) => {
                   let isCurrentDate =
                     new Date().getDate() === index + 1 &&
-                    new Date().getMonth() === currentMonth + 1;
+                    new Date().getMonth() === currentMonth + 0;
 
                   let tasksForTheDay = [];
                   const taskColorFlags = [];
@@ -85,10 +105,12 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
                         styles.dayCell,
                         styles.dynamicDayCell,
                         {
-                          backgroundColor: isCurrentDate ? "black" : "#ebebeb",
+                          backgroundColor: isCurrentDate
+                            ? "#7CB9E8"
+                            : "#F0F8FF",
                         },
                         index + 1 === selectedDate
-                          ? { borderWidth: 2, borderColor: "blue" }
+                          ? { borderWidth: 2, borderColor: "#00CCFF" }
                           : {},
                       ]}
                     >
@@ -99,7 +121,7 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
                               styles.dayText,
                               {
                                 color: isCurrentDate
-                                  ? "white"
+                                  ? "black"
                                   : pressed
                                   ? "silver"
                                   : "black",
@@ -155,7 +177,7 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
             </View>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -179,9 +201,9 @@ const styles = StyleSheet.create({
   dayCell: {
     height: 50,
     width: windowWidth / 7,
-    backgroundColor: "white",
+    backgroundColor: "#e5e5e5",
     borderWidth: 1,
-    borderColor: "silver",
+    borderColor: "white",
   },
   dynamicDayCell: {
     backgroundColor: "silver",

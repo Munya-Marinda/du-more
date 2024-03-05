@@ -1,0 +1,176 @@
+import React from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import { Dimensions, Pressable, ScrollView, Text, View } from "react-native";
+import Animated, {
+  SlideInLeft,
+  SlideInRight,
+  SlideOutLeft,
+} from "react-native-reanimated";
+import { globalStyles } from "../../styles/styles";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
+
+const TodaysFocus = ({
+  screenMode,
+  setModalVisible,
+  todaysItems = ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+}) => {
+  //
+  //
+  //
+  return (
+    <View>
+      <Animated.View
+        entering={SlideInLeft}
+        exiting={SlideOutLeft}
+        style={{
+          height: 100,
+          paddingBottom: 5,
+          maxHeight: windowHeight * 0.2,
+        }}
+      >
+        <ScrollView
+          horizontal={true}
+          style={{
+            margin: 0,
+            width: windowWidth,
+          }}
+        >
+          {/* ADD ITEM BUTTON */}
+          <Pressable
+            onPress={() => {
+              if (screenMode.value === "edit") {
+                screenMode.selectedItemsIds(item?.id);
+              } else {
+                setModalVisible(true);
+              }
+            }}
+          >
+            {({ pressed }) => (
+              <View
+                style={[
+                  {
+                    height: todaysItems?.length === 0 ? 80 : 95,
+                    display: "flex",
+                    paddingBottom: 5,
+                    alignItems: "center",
+                    paddingLeft: 20,
+                    paddingRight: 10,
+                    // backgroundColor: "red",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    maxHeight: windowHeight * 0.2,
+                  },
+                  todaysItems?.length === 0 ? { width: windowWidth } : {},
+                ]}
+              >
+                <Ionicons
+                  name="add-circle"
+                  size={todaysItems?.length === 0 ? 55 : 35}
+                  color={"white"}
+                  style={{ opacity: pressed ? 0.4 : 1 }}
+                />
+                {todaysItems?.length === 0 && (
+                  <Text style={{ color: "white", fontSize: 12 }}>
+                    PRESS HERE ADD NEW TASK
+                  </Text>
+                )}
+              </View>
+            )}
+          </Pressable>
+
+          {/* ITEMS */}
+          {todaysItems.map((item, index) => {
+            return (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  if (screenMode.value === "edit") {
+                    screenMode.selectedItemsIds(item?.id);
+                  } else {
+                    setModalVisible(true);
+                  }
+                }}
+                onLongPress={() => {
+                  screenMode.handleScreenMode("edit");
+                  screenMode.selectedItemsIds(item?.id);
+                }}
+              >
+                <View
+                  style={[
+                    globalStyles.item_parent_2,
+                    {
+                      borderRadius: 10,
+                      backgroundColor: item?.flag ? item?.flag : "gray",
+                      marginRight: index === todaysItems.length - 1 ? 10 : 0,
+                    },
+                  ]}
+                >
+                  <LinearGradient
+                    start={{ x: 0, y: 0 }}
+                    style={{
+                      borderRadius: 10,
+                    }}
+                    colors={["rgba(255,255,255,0.9)", "rgba(255,255,255,0.7)"]}
+                  >
+                    <View
+                      style={[
+                        globalStyles.item_container_2,
+                        screenMode.value === "edit" &&
+                        screenMode.selectedItemsID.indexOf(item?.id) !== -1
+                          ? {
+                              borderWidth: 2,
+                              borderColor: "blue",
+                            }
+                          : {},
+                      ]}
+                    >
+                      <View
+                        style={[
+                          globalStyles.item_flag_2,
+                          {
+                            backgroundColor: item?.flag ? item?.flag : "black",
+                          },
+                        ]}
+                      >
+                        {/* <Text style={globalStyles.item_flag_text_2}>.</Text> */}
+                      </View>
+                      <View style={globalStyles.item_info_parent_2}>
+                        <View style={globalStyles.item_title_text_2_parent}>
+                          <Text
+                            style={globalStyles.item_title_text_2}
+                            numberOfLines={1}
+                          >
+                            {item?.title ? item?.title : "no title"}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text
+                            numberOfLines={2}
+                            style={{
+                              fontSize: 12,
+                              color: "black",
+                            }}
+                          >
+                            {item?.note ? item?.note : "no note"}
+                          </Text>
+                          {/* <Text style={globalStyles.item_date_text_2}>
+                             {item?.date ? formatDate(item?.date) : "no date"}
+                            </Text> */}
+                        </View>
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </View>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </Animated.View>
+    </View>
+  );
+};
+
+export default TodaysFocus;

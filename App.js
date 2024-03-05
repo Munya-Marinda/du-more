@@ -1,22 +1,23 @@
-import { SafeAreaView, StyleSheet, Text, View, StatusBar } from "react-native";
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { HomePage } from "./src/views/HomeView";
-import ManualTest from "./src/components/ManualTest";
 
 export default function App() {
-  //
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle={"dark-content"} />
-      <HomePage />
-      {/* <ManualTest /> */}
-    </SafeAreaView>
+    <>
+      <StatusBar style="dark" backgroundColor="red" />
+      <SafeAreaView style={styles.container}>
+        <HomePage />
+        {/* <ManualTest /> */}
+      </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    paddingTop: 50,
+    flex: 1,
+    paddingTop: 40,
     alignItems: "center",
     backgroundColor: "white",
     justifyContent: "center",
