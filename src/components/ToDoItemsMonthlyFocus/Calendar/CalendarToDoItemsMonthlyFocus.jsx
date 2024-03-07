@@ -32,7 +32,7 @@ const monthsOrder = [
   "December",
 ];
 
-const CalendarToDoItemsMonthlyFocus = ({ items, getToDoItems }) => {
+const CalendarToDoItemsMonthlyFocus = ({ items, _getToDoItems }) => {
   const [yearData, setYearData] = useState(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
@@ -125,7 +125,7 @@ const CalendarToDoItemsMonthlyFocus = ({ items, getToDoItems }) => {
         <UpdateToDoItem
           item={item}
           asyncKey={asyncKey}
-          getToDoItems={getToDoItems}
+          _getToDoItems={_getToDoItems}
           setModalVisible={setModalVisible}
         />
       </Modal>

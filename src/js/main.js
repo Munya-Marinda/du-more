@@ -129,7 +129,23 @@ export const formatDuration = (seconds) => {
   return parts.join(", ");
 };
 
-export const getToDoItems = async (_key) => {
+export const getToDoItemById = async (id, asyncKey) => {
+  try {
+    const value = await AsyncStorage.getItem(asyncKey);
+    if (value !== null) {
+      const items = JSON.parse(value);
+      const foundItem = items.find((_item) => _item.id === id);
+      return foundItem;
+    } else {
+      return null;
+    }
+  } catch (e) {
+    console.error("getToDoItemById", e);
+    return null;
+  }
+};
+
+export const getToDoItems = async (_key, rawList = false) => {
   try {
     if (Object.keys(asyncKeys).indexOf(_key) === -1)
       return ["key not found: " + _key];
@@ -140,6 +156,10 @@ export const getToDoItems = async (_key) => {
     const todaysItems = [];
 
     if (jsonValue !== null && jsonValue !== undefined) {
+      if (rawList) {
+        return jsonValue;
+      }
+
       jsonValue.forEach((item) => {
         if (
           new Date(item?.date).getDate() === new Date().getDate() &&
@@ -183,38 +203,35 @@ export const addToDoItems = async (singleItemData) => {
 };
 
 export const searchItems = async (_value) => {
-  //
-  const results = await getToDoItems();
-  const jsonData = results?.completedItems.concat(
-    results?.pendingItems,
-    results?.trashedItems
-  );
+  try {
+    const jsonData = [
+      ...(await getToDoItems("COMPLETED", true)),
+      ...(await getToDoItems("PENDING", true)),
+      ...(await getToDoItems("TRASH", true)),
+    ];
 
-  // return [];
-  if (
-    _value !== undefined &&
-    _value !== null &&
-    _value !== "" &&
-    _value.trim().length > 1
-  ) {
-    // Search for matches
-    const matchingItems = jsonData.filter((item) => {
-      // Check title and note
-      return (
-        item.title.toLowerCase().includes(_value.toLowerCase()) ||
-        item.note.toLowerCase().includes(_value.toLowerCase())
-      );
-    });
-    //
-    if (matchingItems.length > 0) {
-      // show the Id
-      // const matchingIds = matchingItems.map((item) => item.id);
-      return matchingItems;
+    if (
+      _value !== undefined &&
+      _value !== null &&
+      _value !== "" &&
+      _value.trim().length > 1
+    ) {
+      const matchingItems = jsonData.filter((item) => {
+        return (
+          item.title.toLowerCase().includes(_value.toLowerCase()) ||
+          item.note.toLowerCase().includes(_value.toLowerCase())
+        );
+      });
+      if (matchingItems.length > 0) {
+        return matchingItems;
+      } else {
+        return [];
+      }
     } else {
       return [];
     }
-  } else {
-    return [];
+  } catch (e) {
+    console.log("getToDoItems()", e);
   }
 };
 
@@ -224,52 +241,91 @@ export const clearTrash = async () => {
   } catch (e) {}
 };
 
-export const sortObjectByMonth = (obj) => {
-  // Convert the object to an array of key-value pairs
-  const entries = Object.entries(obj);
-
-  // Sort the array of key-value pairs by month
-  const sortedEntries = entries.sort(([monthA], [monthB]) => {
-    const monthsOrder = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    return monthsOrder.indexOf(monthA) - monthsOrder.indexOf(monthB);
-  });
-
-  // Convert the sorted array back to an object
-  const sortedObject = Object.fromEntries(sortedEntries);
-
-  return sortedObject;
+export const saveToDoItems = async (singleItemData, item, asyncKey) => {
+  try {
+    const value = await AsyncStorage.getItem(asyncKey);
+    if (value !== null) {
+      const items = JSON.parse(value);
+      if (singleItemData.status === item.status) {
+        items.forEach((_item, index) => {
+          if (_item.id === item.id) {
+            items[index] = singleItemData;
+          }
+        });
+        // SAVE ITEMS
+        await AsyncStorage.setItem(asyncKey, JSON.stringify(items));
+      } else {
+        const updateItems = [];
+        items.forEach((_item, index) => {
+          if (_item.id !== item.id) {
+            updateItems.push(_item);
+          }
+        });
+        await AsyncStorage.setItem(asyncKey, JSON.stringify(updateItems));
+        //
+        const _value = await AsyncStorage.getItem(
+          asyncKeys[singleItemData.status.toUpperCase()]
+        );
+        if (_value !== null) {
+          const existingItems = JSON.parse(_value);
+          const newItem = singleItemData;
+          existingItems.unshift(newItem);
+          await AsyncStorage.setItem(
+            asyncKeys[singleItemData.status.toUpperCase()],
+            JSON.stringify(existingItems)
+          );
+        }
+      }
+    }
+  } catch (e) {
+    console.log("saveToDoItems()", e);
+  }
 };
 
+// TASK METHODS END
+
 export const sortTasksByDate = (tasks) => {
-  return tasks.reduce((result, task) => {
+  const monthOrder = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  // Initialize an object to store tasks grouped by month and day
+  const result = {};
+
+  // Iterate over the tasks
+  tasks.forEach((task) => {
     const date = new Date(task.date);
     const month = date.toLocaleString("default", { month: "long" });
     const day = date.getDate();
 
-    if (!result[month]) {
-      result[month] = {};
-    }
+    // Ensure month and day objects exist
+    result[month] = result[month] || {};
+    result[month][day] = result[month][day] || [];
 
-    if (!result[month][day]) {
-      result[month][day] = [];
-    }
-
+    // Push the task to the corresponding day in the month
     result[month][day].push(task);
-    return result;
-  }, {});
+  });
+
+  // Sort the months based on the order defined in monthOrder array
+  const sortedResult = {};
+  monthOrder.forEach((month) => {
+    if (result[month]) {
+      sortedResult[month] = result[month];
+    }
+  });
+
+  return sortedResult;
 };
 
 export const editSelectedItems = async (moveTo, activeTab, selectedItemsID) => {
@@ -360,46 +416,29 @@ export const clearUserData = async () => {
   } catch (e) {}
 };
 
-export const deleteSelectedItemsFromTrash = async () => {
+export const deleteSelectedItemsFromTrash = async (
+  selectedItemsID,
+  activeTab
+) => {
   try {
     const value = await AsyncStorage.getItem(asyncKeys[activeTab]);
-
     if (value !== null) {
       const items = JSON.parse(value);
       const newItems = [];
       //
       items.forEach((_item) => {
-        if (screenMode.selectedItemsID.indexOf(_item.id) === -1) {
+        if (selectedItemsID.indexOf(_item.id) === -1) {
           newItems.push(_item);
         }
       });
-      //
-      switch (asyncKeys[activeTab]) {
-        case "completedItems":
-          setPendingSortedByDate(sortTasksByDate(newItems));
-        case "pendingItems":
-          setCompletedSortedByDate(sortTasksByDate(newItems));
-        case "trashedItems":
-          setTrashSortedByDate(sortTasksByDate(newItems));
-        default:
-          break;
-      }
-      // save the new list of items
       await AsyncStorage.setItem(
         asyncKeys[activeTab],
         JSON.stringify(newItems)
       );
-
-      //
-      setScreenMode((prevScreenMode) => ({
-        ...prevScreenMode,
-        selectedItemsID: [],
-      }));
-      handleScreenMode("");
     }
-  } catch (e) {}
-  getToDoItems();
-  setModalVisible(false);
+  } catch (e) {
+    console.log("deleteSelectedItemsFromTrash()", e);
+  }
 };
 
 export const openWebLink = (link) => {

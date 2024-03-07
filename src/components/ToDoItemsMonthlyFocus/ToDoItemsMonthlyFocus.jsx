@@ -4,7 +4,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import ModalToDoItemsMonthlyFocus from "./ModalToDoItemsMonthlyFocus";
 import { controlIconSize_1, globalStyles } from "../../styles/styles";
 
-const ToDoItemsMonthlyFocus = ({ items, setModalVisible, getToDoItems }) => {
+const ToDoItemsMonthlyFocus = ({ items, setModalVisible, _getToDoItems }) => {
   const [showCalendarModal, setShowCalendarModal] = useState(false);
 
   // Get the current year
@@ -28,7 +28,7 @@ const ToDoItemsMonthlyFocus = ({ items, setModalVisible, getToDoItems }) => {
     <>
       <ModalToDoItemsMonthlyFocus
         items={items}
-        getToDoItems={getToDoItems}
+        _getToDoItems={_getToDoItems}
         setModalVisible={setModalVisible}
         showCalendarModal={showCalendarModal}
         handleShowCalendarModal={handleShowCalendarModal}

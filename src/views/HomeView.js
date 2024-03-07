@@ -8,13 +8,11 @@ import {
   Pressable,
   Dimensions,
   Alert,
-  ToastAndroid,
-  Linking,
-  Share,
   Image,
+  ActivityIndicator,
+  BackHandler,
 } from "react-native";
 import * as Device from "expo-device";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -28,24 +26,19 @@ import { SingleToDoItem } from "../components/SingleToDoItem/SingleToDoItem";
 import {
   DEV_ADDTODOITEMS,
   DEV_DELETETODOITEMS,
-  addToDoItems,
-  colorOptions,
+  deleteSelectedItemsFromTrash,
   editSelectedItems,
-  formatDate,
-  formatDate1,
-  formatTime,
   getToDoItems,
   initialItemState,
-  mergeTimeAndDate,
   openEmailApp,
   openWebLink,
   searchItems,
   shareApp,
 } from "../js/main";
 import WebView from "react-native-webview";
-import PushNotification from "../components/PushNotification";
 import ToDoItemsMonthlyFocus from "../components/ToDoItemsMonthlyFocus/ToDoItemsMonthlyFocus";
 import TodaysFocus from "../components/TodaysFocus/TodaysFocus";
+import AddNewTask from "../components/AddNewTask/AddNewTask";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -64,48 +57,17 @@ export const HomePage = () => {
   const [trash, setTrash] = useState([]);
   const [todaysItems, setTodaysItems] = useState([]);
   //
-  const [sortedByDate, setSortedByDate] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [busySearching, setBusySearching] = useState(false);
   const [searchedItems, setSearchedItems] = useState([]);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
   const [devMode, setDevMode] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   //
-  const [singleItemData, setSingleItemData] = useState(initialItemState);
-
   const [itemsSortedByDate, setItemsSortedByDate] = useState({});
 
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
   //
   //
   //
@@ -115,11 +77,40 @@ export const HomePage = () => {
 
   useEffect(() => {
     _getToDoItems();
+
+    const backAction = () => {
+      Alert.alert("Exit App", "Do you want to exit the app?", [
+        {
+          text: "No",
+          onPress: () => {
+            return false;
+          },
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: () => {
+            BackHandler.exitApp();
+          },
+        },
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
   }, []);
+
+  useEffect(() => {
+    _getToDoItems();
+  }, [activeTab]);
 
   const _getToDoItems = async () => {
     const result = await getToDoItems(activeTab);
-    // console.log("result", result);
     if (result?.todaysItems && result?.itemsItemsByDate) {
       setTodaysItems(result?.todaysItems);
       setItemsSortedByDate(result?.itemsItemsByDate);
@@ -152,18 +143,17 @@ export const HomePage = () => {
   const selectAllItems = () => {
     let currentItems = [];
     let currentItemsIds = [];
-    switch (activeTab) {
-      case "PENDING":
-        currentItems = pending;
-        break;
-      case "COMPLETED":
-        currentItems = completed;
-        break;
-      case "TRASH":
-        currentItems = trash;
-        break;
-      default:
-        break;
+
+    if (Object.keys(itemsSortedByDate)?.length > 0) {
+      const months = Object.keys(itemsSortedByDate);
+      months?.forEach((month) => {
+        const days = Object.keys(itemsSortedByDate[month]);
+        if (days?.length > 0) {
+          days?.forEach((day) => {
+            currentItems = [...currentItems, ...itemsSortedByDate[month][day]];
+          });
+        }
+      });
     }
 
     currentItems.forEach((item) => {
@@ -198,12 +188,14 @@ export const HomePage = () => {
     foo();
   };
 
-  const _searchItems = (value) => {
+  const _searchItems = async (value) => {
     setSearchTerm(value);
-    const foo = async () => {
-      setSearchedItems(await searchItems(value));
-    };
-    foo();
+    setBusySearching(true);
+    const result = await searchItems(value);
+    if (result) {
+      setSearchedItems(result);
+    }
+    setBusySearching(false);
   };
 
   //
@@ -211,68 +203,7 @@ export const HomePage = () => {
   //
   //
   //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
+
   return (
     <View style={{ position: "relative", flex: 1 }}>
       <StatusBar hidden={false} />
@@ -319,12 +250,12 @@ export const HomePage = () => {
                   },
                 ]}
               >
-                Filter
+                Tabs
               </Text>
               <Pressable
                 onPress={() => {
+                  setActiveTab("PENDING");
                   setShowBurgerMenu(false);
-                  setSortedByDate(!sortedByDate);
                 }}
                 style={{
                   display: "flex",
@@ -337,17 +268,73 @@ export const HomePage = () => {
                   <Text
                     style={[
                       {
+                        color: "#ff7c00",
+                        opacity: pressed ? 0.5 : 1,
+                      },
+                      globalStyles.burgerMenuButton,
+                    ]}
+                  >
+                    <Ionicons name={"time-outline"} size={20} color="#ff7c00" />
+                    {"  "} PENDING TASKS
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setActiveTab("COMPLETED");
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      {
+                        color: "#069900",
                         opacity: pressed ? 0.5 : 1,
                       },
                       globalStyles.burgerMenuButton,
                     ]}
                   >
                     <Ionicons
-                      name={sortedByDate ? "arrow-up" : "arrow-down"}
+                      name={"checkmark-circle-outline"}
                       size={20}
-                      color="black"
+                      color="#069900"
                     />
-                    {"  "} Sort By Date
+                    {"  "} COMPLETED TASKS
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setActiveTab("TRASH");
+                  setShowBurgerMenu(false);
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {({ pressed }) => (
+                  <Text
+                    style={[
+                      { color: "#d70000", opacity: pressed ? 0.5 : 1 },
+                      globalStyles.burgerMenuButton,
+                    ]}
+                  >
+                    <Ionicons
+                      name={"trash-outline"}
+                      size={20}
+                      color="#d70000"
+                    />
+                    {"  "} TRASH BIN
                   </Text>
                 )}
               </Pressable>
@@ -870,241 +857,15 @@ export const HomePage = () => {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          // setModalVisible(!modalVisible);
-          // setSingleItemData(initialItemState);
+          setModalVisible(false);
+          setSingleItemData(initialItemState);
         }}
       >
-        <View style={globalStyles.modal_parent_1}>
-          <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: 5 }}>
-            ADD NEW TASK
-          </Text>
-          {/* INPUTS */}
-          <ScrollView
-            style={{
-              width: windowWidth,
-            }}
-          >
-            <View
-              style={{
-                display: "flex",
-                paddingBottom: 30,
-                alignItems: "center",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <View style={globalStyles.modal_input_group_1}>
-                <TextInput
-                  style={globalStyles.modal_text_input}
-                  onChangeText={(value) => {
-                    setSingleItemData({
-                      ...singleItemData,
-                      title: value,
-                    });
-                  }}
-                  value={singleItemData.title}
-                  placeholder="Title"
-                  placeholderTextColor={"gray"}
-                />
-
-                <TextInput
-                  style={globalStyles.modal_multitext_input}
-                  onChangeText={(value) => {
-                    setSingleItemData({
-                      ...singleItemData,
-                      note: value,
-                    });
-                  }}
-                  value={singleItemData.note}
-                  placeholder={"Add A Note\n...\n...\n\n\n\n\n\n\n\n\n\n"}
-                  placeholderTextColor={"gray"}
-                  multiline={true}
-                  textAlignVertical="top"
-                />
-
-                <View style={globalStyles.modal_color_date_group_1}>
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      color: "gray",
-                      marginRight: 25,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Due Date:
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowDatePicker(true);
-                    }}
-                  >
-                    {showDatePicker && (
-                      <DateTimePicker
-                        testID="dateTimePicker"
-                        value={singleItemData.date}
-                        minimumDate={new Date()}
-                        mode="date"
-                        is24Hour={true}
-                        display="default"
-                        onChange={(event, selectedDate) => {
-                          const currentDate =
-                            selectedDate || singleItemData.date;
-                          setSingleItemData({
-                            ...singleItemData,
-                            date: currentDate,
-                          });
-                          setShowDatePicker(false);
-                        }}
-                      />
-                    )}
-                    <Text style={globalStyles.modal_button_2}>
-                      {formatDate1(singleItemData.date)}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowTimePicker(true);
-                    }}
-                  >
-                    {showTimePicker && (
-                      <DateTimePicker
-                        testID="dateTimePicker"
-                        value={singleItemData.time}
-                        // minimumDate={new Date()}
-                        mode="time"
-                        is24Hour={true}
-                        display="default"
-                        onChange={(event, selectedTime) => {
-                          const currentTime =
-                            selectedTime || singleItemData.time;
-                          setSingleItemData({
-                            ...singleItemData,
-                            time: currentTime,
-                          });
-                          setShowTimePicker(false);
-                        }}
-                      />
-                    )}
-                    <Text style={globalStyles.modal_button_2}>
-                      {formatTime(singleItemData.time)}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                <View
-                  style={{
-                    marginTop: 10,
-                    display: "flex",
-                    marginBottom: 20,
-                    alignItems: "flex-start",
-                    flexDirection: "column",
-                    width: windowWidth / 1.2,
-                    justifyContent: "flex-start",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      color: "gray",
-                      marginBottom: 10,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Select A Color Tag:
-                  </Text>
-                  <View style={globalStyles.modal_color_option_group_2}>
-                    <View style={globalStyles.modal_color_option_group_1}>
-                      {colorOptions.map((option, i) => (
-                        <TouchableOpacity
-                          key={i}
-                          onPress={() => {
-                            setSingleItemData({
-                              ...singleItemData,
-                              flag: option,
-                            });
-                          }}
-                        >
-                          <View
-                            style={[
-                              globalStyles.modal_color_option_1,
-                              {
-                                backgroundColor: option,
-                              },
-                              singleItemData.flag !== option
-                                ? {}
-                                : {
-                                    borderWidth: 1,
-                                    borderColor: "black",
-                                  },
-                            ]}
-                          ></View>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </ScrollView>
-          {/* CANCEL AND SAVE BUTTON */}
-          <View style={globalStyles.modal_button_group_1}>
-            <TouchableOpacity
-              onPress={() => {
-                Alert.alert(
-                  "Cancel Adding Task",
-                  "Are you sure you want to cancel?",
-                  [
-                    {
-                      text: "No",
-                      onPress: () => {
-                        return false;
-                      },
-                      style: "cancel",
-                    },
-                    {
-                      text: "YES",
-                      onPress: () => {
-                        setSingleItemData({
-                          flag: "green",
-                          status: "pending",
-                          title: "",
-                          note: "",
-                          date: new Date(),
-                          date_created: new Date(),
-                        });
-                        setModalVisible(false);
-                      },
-                    },
-                  ]
-                );
-              }}
-            >
-              <Text style={globalStyles.modal_button_1}>CANCEL</Text>
-            </TouchableOpacity>
-            {/* <PushNotification
-              title={"ADD"}
-              addToDoItems={addToDoItems}
-              taskTitle={singleItemData.title}
-              taskNote={singleItemData.note}
-              datetime={mergeTimeAndDate(
-                singleItemData.date,
-                singleItemData.time
-              )}
-            /> */}
-
-            <TouchableOpacity
-              onPress={async () => {
-                await addToDoItems(singleItemData);
-                _getToDoItems();
-                setModalVisible(false);
-                setActiveTab("PENDING");
-                setSingleItemData(initialItemState);
-              }}
-            >
-              <Text style={globalStyles.modal_button_1}>ADD</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <AddNewTask
+          setActiveTab={setActiveTab}
+          _getToDoItems={_getToDoItems}
+          setModalVisible={setModalVisible}
+        />
       </Modal>
 
       {/* SEARCH ITEMS MODAL */}
@@ -1132,33 +893,40 @@ export const HomePage = () => {
           </View>
           {/* RESULTS PREVIEW */}
           <ScrollView>
-            {searchedItems !== undefined &&
-            searchedItems !== null &&
-            searchedItems.length > 0 ? (
-              <>
-                {searchedItems.map((item, index) => {
-                  return (
-                    <SingleToDoItem
-                      item={item}
-                      key={index}
-                      index={index}
-                      asyncKey={"completedItems"}
-                      getToDoItems={getToDoItems}
-                      screenMode={screenMode}
-                    />
-                  );
-                })}
-              </>
+            {busySearching ? (
+              <ActivityIndicator />
             ) : (
-              <Text
-                style={{
-                  color: "gray",
-                  marginTop: 150,
-                  fontSize: 16,
-                }}
-              >
-                {searchTerm === "" ? "" : "NO RESULTS FOUND"}
-              </Text>
+              <>
+                {searchedItems !== undefined &&
+                searchedItems !== null &&
+                searchedItems.length > 0 ? (
+                  <>
+                    {searchedItems.map((item, index) => {
+                      return (
+                        <SingleToDoItem
+                          animate={false}
+                          item={item}
+                          key={index}
+                          index={index}
+                          asyncKey={"completedItems"}
+                          _getToDoItems={_getToDoItems}
+                          screenMode={screenMode}
+                        />
+                      );
+                    })}
+                  </>
+                ) : (
+                  <Text
+                    style={{
+                      color: "gray",
+                      marginTop: 150,
+                      fontSize: 16,
+                    }}
+                  >
+                    {searchTerm === "" ? "" : "NO RESULTS FOUND"}
+                  </Text>
+                )}
+              </>
             )}
           </ScrollView>
           {/* CANCEL AND SAVE BUTTON */}
@@ -1177,150 +945,156 @@ export const HomePage = () => {
 
       {/* TOPBAR | Today's Focus */}
       {screenMode.value !== "edit" ? (
-        <View
-          style={{
-            borderTopLeftRadius: 10,
-            borderTopRightRadius: 10,
-            backgroundColor: "#003153",
-          }}
-        >
-          <View style={globalStyles.homePage_top_parent_1}>
-            {/* <Pressable
-              onPress={() => {
-                setSearchTerm("");
-                setSearchModalVisible(true);
-              }}
-            >
-              {({ pressed }) => (
-                <Ionicons
-                  name="search"
-                  size={25}
-                  color={!pressed ? "white" : "rgba(0,0,0,0.4)"}
-                />
-              )}
-            </Pressable> */}
-
-            <Text
+        <>
+          {activeTab === "PENDING" && (
+            <View
               style={{
-                fontSize: 16,
-                marginLeft: 10,
-                color: "white",
-                letterSpacing: 2,
-                fontWeight: "bold",
-                textAlign: "center",
+                borderTopLeftRadius: 10,
+                borderTopRightRadius: 10,
+                backgroundColor: "#003153",
               }}
             >
-              TODAY'S FOCUS
-            </Text>
-          </View>
-          <TodaysFocus
-            todaysItems={todaysItems}
-            getToDoItems={getToDoItems}
-            screenMode={screenMode}
-            setModalVisible={setModalVisible}
-          />
-        </View>
+              <View style={globalStyles.homePage_top_parent_1}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    marginLeft: 10,
+                    color: "white",
+                    letterSpacing: 2,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                >
+                  TODAY'S FOCUS
+                </Text>
+              </View>
+              <TodaysFocus
+                screenMode={screenMode}
+                todaysItems={todaysItems}
+                setActiveTab={setActiveTab}
+                _getToDoItems={_getToDoItems}
+                setModalVisible={setModalVisible}
+              />
+            </View>
+          )}
+          {activeTab === "COMPLETED" && (
+            <View
+              style={{
+                borderTopLeftRadius: 10,
+                borderTopRightRadius: 10,
+                backgroundColor: "green",
+              }}
+            >
+              <View style={globalStyles.homePage_top_parent_1}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    marginLeft: 10,
+                    color: "white",
+                    letterSpacing: 2,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                >
+                  COMPLETED TASKS
+                </Text>
+              </View>
+            </View>
+          )}
+          {activeTab === "TRASH" && (
+            <View
+              style={{
+                borderTopLeftRadius: 10,
+                borderTopRightRadius: 10,
+                backgroundColor: "red",
+              }}
+            >
+              <View style={globalStyles.homePage_top_parent_1}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    marginLeft: 10,
+                    color: "white",
+                    letterSpacing: 2,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                >
+                  DELETED TASKS
+                </Text>
+              </View>
+            </View>
+          )}
+        </>
       ) : (
         <>
-          <View style={globalStyles.homePage_top_parent_1}>
-            <TouchableOpacity
-              onPress={() => {
-                handleScreenMode("");
-                setScreenMode((prevScreenMode) => ({
-                  ...prevScreenMode,
-                  selectedItemsID: [],
-                }));
-              }}
-              style={globalStyles.homePage_search_button}
-            >
-              <Ionicons name="close" size={30} color={"gray"} />
-            </TouchableOpacity>
-            <Text
-              style={{
-                fontWeight: "bold",
-                fontSize: 20,
-                textAlign: "center",
-              }}
-            >
-              {screenMode.selectedItemsID.length} Selected
-            </Text>
-          </View>
           <View
             style={{
-              minHeight: 30,
-              marginTop: 10,
-              marginBottom: 20,
+              paddingBottom: 10,
+              backgroundColor: "#003153",
             }}
           >
-            <ScrollView horizontal={true}>
-              <Pressable onPress={selectAllItems}>
-                <Text
-                  style={[
-                    globalStyles.edit_options_pills,
-                    {
-                      backgroundColor: "transparent",
-                      borderWidth: 1,
-                      borderColor: "silver",
-                      marginRight: 10,
-                      color: "black",
-                    },
-                  ]}
-                >
-                  SELECT ALL
-                </Text>
-              </Pressable>
-              {activeTab === "TRASH" && (
-                <Pressable
-                  style={{
-                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
-                  }}
-                  onPress={() => {
-                    Alert.alert(
-                      "Delete Tasks From Trash?",
-                      "The selected tasks will be deleted from the trash.",
-                      [
-                        {
-                          text: "No",
-                          onPress: () => {
-                            return false;
-                          },
-                          style: "cancel",
-                        },
-                        {
-                          text: "Yes",
-                          onPress: () => {
-                            deleteSelectedItemsFromTrash();
-                          },
-                        },
-                      ]
-                    );
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={[
-                        globalStyles.edit_options_pills,
-                        {
-                          backgroundColor: "red",
-                          opacity: pressed ? 0.5 : 1,
-                        },
-                      ]}
-                    >
-                      DELETE PERMANENTLY
-                    </Text>
-                  )}
+            <View style={globalStyles.homePage_top_parent_1}>
+              <TouchableOpacity
+                onPress={() => {
+                  handleScreenMode("");
+                  setScreenMode((prevScreenMode) => ({
+                    ...prevScreenMode,
+                    selectedItemsID: [],
+                  }));
+                }}
+              >
+                <Ionicons name="close" size={30} color={"silver"} />
+              </TouchableOpacity>
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: "white",
+                  fontWeight: "normal",
+                  textAlign: "center",
+                }}
+              >
+                {screenMode.selectedItemsID.length} Selected
+              </Text>
+            </View>
+            <View
+              style={{
+                minHeight: 30,
+              }}
+            >
+              <ScrollView
+                horizontal={true}
+                contentContainerStyle={{
+                  display: "flex",
+                  paddingRight: 10,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Pressable onPress={selectAllItems}>
+                  <Text
+                    style={[
+                      globalStyles.edit_options_pills,
+                      {
+                        color: "black",
+                        marginRight: 10,
+                        backgroundColor: "silver",
+                      },
+                    ]}
+                  >
+                    SELECT ALL
+                  </Text>
                 </Pressable>
-              )}
-              {activeTab !== "PENDING" && (
-                <Pressable
-                  style={{
-                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
-                  }}
-                  onPress={() => {
-                    if (screenMode.selectedItemsID.length > 0) {
+                {activeTab === "TRASH" && (
+                  <Pressable
+                    style={{
+                      opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                    }}
+                    onPress={() => {
                       Alert.alert(
-                        "Set Tasks As Pending",
-                        "Set the selected tasks as pending?",
+                        "Delete Tasks From Trash?",
+                        "The selected tasks will be deleted from the trash.",
                         [
                           {
                             text: "No",
@@ -1330,132 +1104,182 @@ export const HomePage = () => {
                             style: "cancel",
                           },
                           {
-                            text: "YES",
-                            onPress: () => {
-                              _editSelectedItems("PENDING");
+                            text: "Yes",
+                            onPress: async () => {
+                              await deleteSelectedItemsFromTrash(
+                                screenMode.selectedItemsID,
+                                activeTab
+                              );
+                              _getToDoItems();
+                              setModalVisible(false);
+                              setScreenMode((prevScreenMode) => ({
+                                ...prevScreenMode,
+                                selectedItemsID: [],
+                              }));
+                              handleScreenMode("");
                             },
                           },
                         ]
                       );
-                    }
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={[
-                        globalStyles.edit_options_pills,
-                        { opacity: pressed ? 0.5 : 1 },
-                      ]}
-                    >
-                      SET AS PENDING
-                    </Text>
-                  )}
-                </Pressable>
-              )}
-              {activeTab !== "COMPLETED" && (
-                <Pressable
-                  style={{
-                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
-                  }}
-                  onPress={() => {
-                    if (screenMode.selectedItemsID.length > 0) {
-                      Alert.alert(
-                        "Set Tasks As Completed",
-                        "Set the selected tasks as completed?",
-                        [
+                    }}
+                  >
+                    {({ pressed }) => (
+                      <Text
+                        style={[
+                          globalStyles.edit_options_pills,
                           {
-                            text: "No",
-                            onPress: () => {
-                              return false;
-                            },
-                            style: "cancel",
+                            backgroundColor: "red",
+                            opacity: pressed ? 0.5 : 1,
                           },
+                        ]}
+                      >
+                        DELETE PERMANENTLY
+                      </Text>
+                    )}
+                  </Pressable>
+                )}
+                {activeTab !== "PENDING" && (
+                  <Pressable
+                    style={{
+                      opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                    }}
+                    onPress={() => {
+                      if (screenMode.selectedItemsID.length > 0) {
+                        Alert.alert(
+                          "Set Tasks As Pending",
+                          "Set the selected tasks as pending?",
+                          [
+                            {
+                              text: "No",
+                              onPress: () => {
+                                return false;
+                              },
+                              style: "cancel",
+                            },
+                            {
+                              text: "YES",
+                              onPress: () => {
+                                _editSelectedItems("PENDING");
+                              },
+                            },
+                          ]
+                        );
+                      }
+                    }}
+                  >
+                    {({ pressed }) => (
+                      <Text
+                        style={[
+                          globalStyles.edit_options_pills,
                           {
-                            text: "YES",
-                            onPress: () => {
-                              _editSelectedItems("COMPLETED");
-                            },
+                            opacity: pressed ? 0.5 : 1,
+                            backgroundColor: "#ff7c00",
                           },
-                        ]
-                      );
-                    }
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={[
-                        globalStyles.edit_options_pills,
-                        { opacity: pressed ? 0.5 : 1 },
-                      ]}
-                    >
-                      SET AS COMPLETED
-                    </Text>
-                  )}
-                </Pressable>
-              )}
-              {activeTab !== "TRASH" && (
-                <Pressable
-                  style={{
-                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
-                  }}
-                  onPress={() => {
-                    if (screenMode.selectedItemsID.length > 0) {
-                      Alert.alert(
-                        "Move To Trash Bin",
-                        "Are you sure you want to move the selected tasks to the trash bin?",
-                        [
+                        ]}
+                      >
+                        SET AS PENDING
+                      </Text>
+                    )}
+                  </Pressable>
+                )}
+                {activeTab !== "COMPLETED" && (
+                  <Pressable
+                    style={{
+                      opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                    }}
+                    onPress={() => {
+                      if (screenMode.selectedItemsID.length > 0) {
+                        Alert.alert(
+                          "Set Tasks As Completed",
+                          "Set the selected tasks as completed?",
+                          [
+                            {
+                              text: "No",
+                              onPress: () => {
+                                return false;
+                              },
+                              style: "cancel",
+                            },
+                            {
+                              text: "YES",
+                              onPress: () => {
+                                _editSelectedItems("COMPLETED");
+                              },
+                            },
+                          ]
+                        );
+                      }
+                    }}
+                  >
+                    {({ pressed }) => (
+                      <Text
+                        style={[
+                          globalStyles.edit_options_pills,
                           {
-                            text: "No",
-                            onPress: () => {
-                              return false;
-                            },
-                            style: "cancel",
+                            opacity: pressed ? 0.5 : 1,
+                            backgroundColor: "#069900",
                           },
+                        ]}
+                      >
+                        SET AS COMPLETED
+                      </Text>
+                    )}
+                  </Pressable>
+                )}
+                {activeTab !== "TRASH" && (
+                  <Pressable
+                    style={{
+                      opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                    }}
+                    onPress={() => {
+                      if (screenMode.selectedItemsID.length > 0) {
+                        Alert.alert(
+                          "Move To Trash Bin",
+                          "Are you sure you want to move the selected tasks to the trash bin?",
+                          [
+                            {
+                              text: "No",
+                              onPress: () => {
+                                return false;
+                              },
+                              style: "cancel",
+                            },
+                            {
+                              text: "YES",
+                              onPress: () => {
+                                _editSelectedItems("TRASH");
+                              },
+                            },
+                          ]
+                        );
+                      }
+                    }}
+                  >
+                    {({ pressed }) => (
+                      <Text
+                        style={[
+                          globalStyles.edit_options_pills,
                           {
-                            text: "YES",
-                            onPress: () => {
-                              _editSelectedItems("TRASH");
-                            },
+                            opacity: pressed ? 0.5 : 1,
+                            backgroundColor: "#D70000",
                           },
-                        ]
-                      );
-                    }
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={[
-                        globalStyles.edit_options_pills,
-                        { opacity: pressed ? 0.5 : 1 },
-                      ]}
-                    >
-                      MOVE TO TRASH
-                    </Text>
-                  )}
-                </Pressable>
-              )}
-            </ScrollView>
+                        ]}
+                      >
+                        MOVE TO TRASH
+                      </Text>
+                    )}
+                  </Pressable>
+                )}
+              </ScrollView>
+            </View>
           </View>
         </>
       )}
 
       {/* TABS */}
       <TasksListView
-        setModalVisible={(bool, options) => {
+        setModalVisible={(bool) => {
           setModalVisible(bool);
-          if (options?.date) {
-            try {
-              let date = new Date(options?.date);
-              setSingleItemData({
-                ...singleItemData,
-                date: date,
-                date_created: date,
-                last_modified: date,
-              });
-            } catch (error) {
-              console.error(error);
-            }
-          }
         }}
         screenMode={{
           handleScreenMode: handleScreenMode,
@@ -1463,12 +1287,13 @@ export const HomePage = () => {
           value: screenMode.value,
           selectedItemsID: screenMode.selectedItemsID,
         }}
+        _getToDoItems={_getToDoItems}
         todaysItems={todaysItems}
         activeTab={activeTab}
         itemsSortedByDate={itemsSortedByDate}
       />
 
-      {/* ADD NEW TASK ICON */}
+      {/* BOTTOM CONTROL PANEL */}
       {screenMode.value !== "edit" && (
         <View
           style={{
@@ -1521,11 +1346,13 @@ export const HomePage = () => {
               />
             )}
           </Pressable>
-          {/* <ToDoItemsMonthlyFocus
+          {/*
+          <ToDoItemsMonthlyFocus
             items={itemsSortedByDate}
-            getToDoItems={getToDoItems}
+            _getToDoItems={_getToDoItems}
             setModalVisible={setModalVisible}
-          /> */}
+          />
+          */}
           <Pressable
             style={globalStyles.bottomControlButton_1}
             onPress={() => {

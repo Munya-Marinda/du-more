@@ -1,79 +1,36 @@
+import React, { useState } from "react";
 import {
   View,
-  Text,
+  StyleSheet,
   TextInput,
   ScrollView,
+  Text,
   TouchableOpacity,
-  Dimensions,
-  ToastAndroid,
+  Alert,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { globalStyles } from "../../styles/styles";
 import {
+  addToDoItems,
   colorOptions,
-  formatDate,
+  formatDate1,
   formatTime,
-  getToDoItemById,
   initialItemState,
-  saveToDoItems,
 } from "../../js/main";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Dimensions } from "react-native";
 
 const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
-export default function UpdateToDoItem({
-  item,
-  asyncKey,
-  _getToDoItems,
-  setModalVisible,
-}) {
+const AddNewTask = ({ setModalVisible, setActiveTab, _getToDoItems }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [singleItemData, setSingleItemData] = useState(initialItemState);
-
-  useEffect(() => {
-    const _getToDoItemById = async () => {
-      const result = await getToDoItemById(item?.id, asyncKey);
-      if (result) {
-        setSingleItemData(result);
-      } else {
-        ToastAndroid.show("Could not get that task", ToastAndroid.LONG, 1000);
-      }
-    };
-    _getToDoItemById();
-  }, [item]);
-
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
   return (
     <View>
       <View style={globalStyles.modal_parent_1}>
-        {/* TASK TITLE */}
-        <Text
-          style={{
-            fontSize: 20,
-            marginBottom: 5,
-            fontWeight: "bold",
-            paddingHorizontal: 10,
-            textAlign: "center",
-          }}
-        >
-          {singleItemData.title}
+        <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: 5 }}>
+          ADD NEW TASK
         </Text>
         {/* INPUTS */}
         <ScrollView
@@ -90,68 +47,7 @@ export default function UpdateToDoItem({
               justifyContent: "center",
             }}
           >
-            {/* INPUTS */}
             <View style={globalStyles.modal_input_group_1}>
-              <View style={[globalStyles.row_center, { marginVertical: 10 }]}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSingleItemData({
-                      ...singleItemData,
-                      status: "pending",
-                    });
-                  }}
-                >
-                  <Text
-                    style={[
-                      globalStyles.modal_status_buttons,
-                      singleItemData.status === "pending"
-                        ? { backgroundColor: "yellow", color: "black" }
-                        : {},
-                    ]}
-                  >
-                    PENDING
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSingleItemData({
-                      ...singleItemData,
-                      status: "completed",
-                    });
-                  }}
-                >
-                  <Text
-                    style={[
-                      globalStyles.modal_status_buttons,
-                      singleItemData.status === "completed"
-                        ? { backgroundColor: "green", color: "white" }
-                        : {},
-                    ]}
-                  >
-                    COMPLETED
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSingleItemData({
-                      ...singleItemData,
-                      status: "trash",
-                    });
-                  }}
-                >
-                  <Text
-                    style={[
-                      globalStyles.modal_status_buttons,
-                      singleItemData.status === "trash"
-                        ? { backgroundColor: "red", color: "white" }
-                        : {},
-                    ]}
-                  >
-                    TRASH
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
               <TextInput
                 style={globalStyles.modal_text_input}
                 onChangeText={(value) => {
@@ -162,7 +58,7 @@ export default function UpdateToDoItem({
                 }}
                 value={singleItemData.title}
                 placeholder="Title"
-                placeholderTextColor={"silver"}
+                placeholderTextColor={"gray"}
               />
 
               <TextInput
@@ -174,8 +70,8 @@ export default function UpdateToDoItem({
                   });
                 }}
                 value={singleItemData.note}
-                placeholder={"Add A Note\n...\n...\n...\n\n\n\n\n\n\n\n\n\n"}
-                placeholderTextColor={"silver"}
+                placeholder={"Add A Note\n...\n...\n\n\n\n\n\n\n\n\n\n"}
+                placeholderTextColor={"gray"}
                 multiline={true}
                 textAlignVertical="top"
               />
@@ -199,7 +95,7 @@ export default function UpdateToDoItem({
                   {showDatePicker && (
                     <DateTimePicker
                       testID="dateTimePicker"
-                      value={new Date(singleItemData.date)}
+                      value={singleItemData.date}
                       minimumDate={new Date()}
                       mode="date"
                       is24Hour={true}
@@ -215,7 +111,7 @@ export default function UpdateToDoItem({
                     />
                   )}
                   <Text style={globalStyles.modal_button_2}>
-                    {formatDate(singleItemData.date)}
+                    {formatDate1(singleItemData.date)}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -226,7 +122,8 @@ export default function UpdateToDoItem({
                   {showTimePicker && (
                     <DateTimePicker
                       testID="dateTimePicker"
-                      value={new Date(singleItemData.time)}
+                      value={singleItemData.time}
+                      // minimumDate={new Date()}
                       mode="time"
                       is24Hour={true}
                       display="default"
@@ -305,41 +202,67 @@ export default function UpdateToDoItem({
         <View style={globalStyles.modal_button_group_1}>
           <TouchableOpacity
             onPress={() => {
-              setModalVisible(false);
+              Alert.alert(
+                "Cancel Adding Task",
+                "Are you sure you want to cancel?",
+                [
+                  {
+                    text: "No",
+                    onPress: () => {
+                      return false;
+                    },
+                    style: "cancel",
+                  },
+                  {
+                    text: "YES",
+                    onPress: () => {
+                      setSingleItemData({
+                        flag: "green",
+                        status: "pending",
+                        title: "",
+                        note: "",
+                        date: new Date(),
+                        date_created: new Date(),
+                      });
+                      setModalVisible(false);
+                    },
+                  },
+                ]
+              );
             }}
           >
             <Text style={globalStyles.modal_button_1}>CANCEL</Text>
           </TouchableOpacity>
-          {/* <PushNotification
-            title={"SAVE"}
-            addToDoItems={() => {
-              const _saveToDoItems = async () => {
-                await saveToDoItems();
-                _getToDoItems();
-              };
-              _saveToDoItems();
-            }}
-            taskTitle={singleItemData.title}
-            taskNote={singleItemData.note}
-            datetime={mergeTimeAndDate(
-              singleItemData.date,
-              singleItemData.time
-            )}
-          /> */}
+          {/*
+            <PushNotification
+              title={"ADD"}
+              addToDoItems={addToDoItems}
+              taskTitle={singleItemData.title}
+              taskNote={singleItemData.note}
+              datetime={mergeTimeAndDate(
+                singleItemData.date,
+                singleItemData.time
+              )}
+            />
+            */}
 
           <TouchableOpacity
             onPress={async () => {
-              await saveToDoItems(singleItemData, item, asyncKey);
-              setTimeout(() => {
-                _getToDoItems();
-                setModalVisible(false);
-              }, 2000);
+              await addToDoItems(singleItemData);
+              _getToDoItems();
+              setModalVisible(false);
+              setActiveTab("PENDING");
+              setSingleItemData(initialItemState);
             }}
           >
-            <Text style={globalStyles.modal_button_1}>SAVE</Text>
+            <Text style={globalStyles.modal_button_1}>ADD</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
-}
+};
+
+const styles = StyleSheet.create({});
+
+export default AddNewTask;

@@ -18,7 +18,6 @@ export default function CalendarToDoItemsMonthlyFocusEvents({
   allTaskDates,
   currentMonth,
   selectedDate,
-  getToDoItems,
   handleSelectedDate,
 }) {
   return (

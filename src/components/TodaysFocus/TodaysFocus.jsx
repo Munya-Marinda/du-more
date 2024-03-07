@@ -1,27 +1,68 @@
-import React from "react";
+import React, { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { Dimensions, Pressable, ScrollView, Text, View } from "react-native";
-import Animated, {
-  SlideInLeft,
-  SlideInRight,
-  SlideOutLeft,
-} from "react-native-reanimated";
+import {
+  View,
+  Text,
+  Modal,
+  Pressable,
+  ScrollView,
+  Dimensions,
+} from "react-native";
+import Animated, { SlideInLeft, SlideOutLeft } from "react-native-reanimated";
 import { globalStyles } from "../../styles/styles";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import UpdateToDoItem from "../SingleToDoItem/UpdateToDoItem";
+import AddNewTask from "../AddNewTask/AddNewTask";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 const TodaysFocus = ({
-  screenMode,
-  setModalVisible,
+  setActiveTab,
+  _getToDoItems,
   todaysItems = ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
 }) => {
+  const [item, setItem] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [addItemModalVisible, setAddItemModalVisible] = useState(false);
   //
   //
   //
   return (
-    <View>
+    <>
+      {/* UPDATE ITEM MODAL */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <UpdateToDoItem
+          item={item}
+          asyncKey={"pendingItems"}
+          _getToDoItems={_getToDoItems}
+          setModalVisible={setModalVisible}
+        />
+      </Modal>
+
+      {/* ADD ITEM MODAL */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={addItemModalVisible}
+        onRequestClose={() => {
+          setAddItemModalVisible(false);
+        }}
+      >
+        <AddNewTask
+          setActiveTab={setActiveTab}
+          _getToDoItems={_getToDoItems}
+          setModalVisible={setAddItemModalVisible}
+        />
+      </Modal>
+
       <Animated.View
         entering={SlideInLeft}
         exiting={SlideOutLeft}
@@ -39,47 +80,44 @@ const TodaysFocus = ({
           }}
         >
           {/* ADD ITEM BUTTON */}
-          <Pressable
-            onPress={() => {
-              if (screenMode.value === "edit") {
-                screenMode.selectedItemsIds(item?.id);
-              } else {
-                setModalVisible(true);
-              }
-            }}
-          >
-            {({ pressed }) => (
-              <View
-                style={[
-                  {
-                    height: todaysItems?.length === 0 ? 80 : 95,
-                    display: "flex",
-                    paddingBottom: 5,
-                    alignItems: "center",
-                    paddingLeft: 20,
-                    paddingRight: 10,
-                    // backgroundColor: "red",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    maxHeight: windowHeight * 0.2,
-                  },
-                  todaysItems?.length === 0 ? { width: windowWidth } : {},
-                ]}
-              >
-                <Ionicons
-                  name="add-circle"
-                  size={todaysItems?.length === 0 ? 55 : 35}
-                  color={"white"}
-                  style={{ opacity: pressed ? 0.4 : 1 }}
-                />
-                {todaysItems?.length === 0 && (
-                  <Text style={{ color: "white", fontSize: 12 }}>
-                    PRESS HERE ADD NEW TASK
-                  </Text>
-                )}
-              </View>
-            )}
-          </Pressable>
+          {todaysItems?.length === 0 && (
+            <Pressable
+              onPress={() => {
+                setAddItemModalVisible(true);
+              }}
+            >
+              {({ pressed }) => (
+                <View
+                  style={[
+                    {
+                      display: "flex",
+                      paddingBottom: 5,
+                      alignItems: "center",
+                      paddingLeft: 20,
+                      paddingRight: 10,
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      maxHeight: windowHeight * 0.2,
+                      height: todaysItems?.length === 0 ? 80 : 95,
+                    },
+                    todaysItems?.length === 0 ? { width: windowWidth } : {},
+                  ]}
+                >
+                  <Ionicons
+                    name="add-circle"
+                    size={todaysItems?.length === 0 ? 55 : 35}
+                    color={"white"}
+                    style={{ opacity: pressed ? 0.4 : 1 }}
+                  />
+                  {todaysItems?.length === 0 && (
+                    <Text style={{ color: "white", fontSize: 12 }}>
+                      ADD TODAY'S TASK
+                    </Text>
+                  )}
+                </View>
+              )}
+            </Pressable>
+          )}
 
           {/* ITEMS */}
           {todaysItems.map((item, index) => {
@@ -87,15 +125,8 @@ const TodaysFocus = ({
               <Pressable
                 key={index}
                 onPress={() => {
-                  if (screenMode.value === "edit") {
-                    screenMode.selectedItemsIds(item?.id);
-                  } else {
-                    setModalVisible(true);
-                  }
-                }}
-                onLongPress={() => {
-                  screenMode.handleScreenMode("edit");
-                  screenMode.selectedItemsIds(item?.id);
+                  setItem(item);
+                  setModalVisible(true);
                 }}
               >
                 <View
@@ -115,18 +146,7 @@ const TodaysFocus = ({
                     }}
                     colors={["rgba(255,255,255,0.9)", "rgba(255,255,255,0.7)"]}
                   >
-                    <View
-                      style={[
-                        globalStyles.item_container_2,
-                        screenMode.value === "edit" &&
-                        screenMode.selectedItemsID.indexOf(item?.id) !== -1
-                          ? {
-                              borderWidth: 2,
-                              borderColor: "blue",
-                            }
-                          : {},
-                      ]}
-                    >
+                    <View style={globalStyles.item_container_2}>
                       <View
                         style={[
                           globalStyles.item_flag_2,
@@ -169,7 +189,7 @@ const TodaysFocus = ({
           })}
         </ScrollView>
       </Animated.View>
-    </View>
+    </>
   );
 };
 

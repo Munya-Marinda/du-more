@@ -6,7 +6,7 @@ import { asyncKeys } from "../js/main";
 export const TasksListView = ({
   activeTab,
   screenMode,
-  sortedByDate,
+  _getToDoItems,
   itemsSortedByDate,
 }) => {
   //
@@ -33,15 +33,12 @@ export const TasksListView = ({
   //
   //
   return (
-    <ScrollView
-      style={globalStyles.homePage_items_scrollView_1}
-      onScroll={(event) => {}}
-    >
+    <ScrollView style={globalStyles.homePage_items_scrollView_1}>
       <ToDoItemsByDate
         asyncKey={asyncKeys[activeTab]}
         items={itemsSortedByDate}
         screenMode={screenMode}
-        sortedByDate={sortedByDate}
+        _getToDoItems={_getToDoItems}
       />
     </ScrollView>
   );
