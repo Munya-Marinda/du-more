@@ -19,6 +19,16 @@ export const globalStyles = StyleSheet.create({
     maxHeight: windowHeight * 0.1,
     justifyContent: "space-between",
   },
+  homePage_top_parent_2: {
+    display: "flex",
+    width: windowWidth,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    maxHeight: windowHeight * 0.1,
+    justifyContent: "flex-start",
+  },
   homePage_top_header_1: {
     fontSize: 10,
     color: "white",

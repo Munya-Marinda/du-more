@@ -79,21 +79,25 @@ export const HomePage = () => {
     _getToDoItems();
 
     const backAction = () => {
-      Alert.alert("Exit App", "Do you want to exit the app?", [
-        {
-          text: "No",
-          onPress: () => {
-            return false;
-          },
-          style: "cancel",
-        },
-        {
-          text: "Yes",
-          onPress: () => {
-            BackHandler.exitApp();
-          },
-        },
-      ]);
+      setActiveTab("PENDING");
+
+      // if (activeTab === "PENDING") {
+      //   Alert.alert("Exit App", "Do you want to exit the app?", [
+      //     {
+      //       text: "No",
+      //       onPress: () => {
+      //         return false;
+      //       },
+      //       style: "cancel",
+      //     },
+      //     {
+      //       text: "Yes",
+      //       onPress: () => {
+      //         BackHandler.exitApp();
+      //       },
+      //     },
+      //   ]);
+      // }
       return true;
     };
 
@@ -607,14 +611,20 @@ export const HomePage = () => {
                       justifyContent: "flex-start",
                     }}
                   >
-                    <Image
-                      source={require("../../assets/md-logo.png")}
-                      style={{
-                        width: 35,
-                        height: 35,
-                        marginRight: 10,
+                    <Pressable
+                      onLongPress={() => {
+                        setDevMode(!devMode);
                       }}
-                    />
+                    >
+                      <Image
+                        source={require("../../assets/md-logo.png")}
+                        style={{
+                          width: 35,
+                          height: 35,
+                          marginRight: 10,
+                        }}
+                      />
+                    </Pressable>
                     <View>
                       <Text
                         style={{
@@ -858,7 +868,6 @@ export const HomePage = () => {
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(false);
-          setSingleItemData(initialItemState);
         }}
       >
         <AddNewTask
@@ -985,7 +994,21 @@ export const HomePage = () => {
                 backgroundColor: "green",
               }}
             >
-              <View style={globalStyles.homePage_top_parent_1}>
+              <View style={globalStyles.homePage_top_parent_2}>
+                <Pressable
+                  onPress={() => {
+                    setActiveTab("PENDING");
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Ionicons
+                      name="arrow-back"
+                      size={controlIconSize_1}
+                      color={"white"}
+                      style={{ opacity: pressed ? 0.4 : 1 }}
+                    />
+                  )}
+                </Pressable>
                 <Text
                   style={{
                     fontSize: 16,
@@ -1009,7 +1032,21 @@ export const HomePage = () => {
                 backgroundColor: "red",
               }}
             >
-              <View style={globalStyles.homePage_top_parent_1}>
+              <View style={globalStyles.homePage_top_parent_2}>
+                <Pressable
+                  onPress={() => {
+                    setActiveTab("PENDING");
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Ionicons
+                      name="arrow-back"
+                      size={controlIconSize_1}
+                      color={"white"}
+                      style={{ opacity: pressed ? 0.4 : 1 }}
+                    />
+                  )}
+                </Pressable>
                 <Text
                   style={{
                     fontSize: 16,

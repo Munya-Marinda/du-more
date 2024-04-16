@@ -21,6 +21,8 @@ export const ToDoItemsByDate = ({
         items !== null
       ) {
         setOrder(Object.keys(items));
+      } else {
+        setOrder([]);
       }
     } catch (error) {
       console.log("error", error);
@@ -33,7 +35,7 @@ export const ToDoItemsByDate = ({
   //
   //
   return (
-    <>
+    <> 
       {order?.length > 0 && order !== undefined && order !== null && (
         <View style={globalStyles.homePage_items_scrollView_viewChild_1}>
           {order?.map((month, index) => {
