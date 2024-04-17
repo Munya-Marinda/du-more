@@ -112,7 +112,7 @@ export default function UpdateToDoItem({
                         style={[
                           globalStyles.modal_status_buttons,
                           singleItemData.status === "pending"
-                            ? { backgroundColor: "yellow", color: "black" }
+                            ? { backgroundColor: "#ff7c00", color: "black" }
                             : {},
                         ]}
                       >

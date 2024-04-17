@@ -168,7 +168,7 @@ const TodaysFocus = ({
                         </View>
                         <View>
                           <Text
-                            numberOfLines={2}
+                            numberOfLines={1}
                             style={{
                               fontSize: 12,
                               color: "black",

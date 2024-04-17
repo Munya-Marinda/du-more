@@ -35,7 +35,7 @@ export const ToDoItemsByDate = ({
   //
   //
   return (
-    <> 
+    <>
       {order?.length > 0 && order !== undefined && order !== null && (
         <View style={globalStyles.homePage_items_scrollView_viewChild_1}>
           {order?.map((month, index) => {
@@ -45,6 +45,7 @@ export const ToDoItemsByDate = ({
                 key={index}
                 style={{
                   marginBottom: 10,
+                  marginTop: index === 0 ? 20 : 0,
                 }}
               >
                 <Text

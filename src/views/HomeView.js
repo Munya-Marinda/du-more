@@ -1062,76 +1062,129 @@ export const HomePage = () => {
               </View>
             </View>
           )}
+          
         </>
       ) : (
-        <>
-          <View
-            style={{
-              paddingBottom: 10,
-              backgroundColor: "#003153",
-            }}
-          >
-            <View style={globalStyles.homePage_top_parent_1}>
-              <TouchableOpacity
-                onPress={() => {
-                  handleScreenMode("");
-                  setScreenMode((prevScreenMode) => ({
-                    ...prevScreenMode,
-                    selectedItemsID: [],
-                  }));
-                }}
-              >
-                <Ionicons name="close" size={30} color={"silver"} />
-              </TouchableOpacity>
-              <Text
-                style={{
-                  fontSize: 20,
-                  color: "white",
-                  fontWeight: "normal",
-                  textAlign: "center",
-                }}
-              >
-                {screenMode.selectedItemsID.length} Selected
-              </Text>
-            </View>
-            <View
-              style={{
-                minHeight: 30,
+        <View
+          style={{
+            paddingBottom: 10,
+            backgroundColor: "#003153",
+          }}
+        >
+          <View style={globalStyles.homePage_top_parent_1}>
+            <TouchableOpacity
+              onPress={() => {
+                handleScreenMode("");
+                setScreenMode((prevScreenMode) => ({
+                  ...prevScreenMode,
+                  selectedItemsID: [],
+                }));
               }}
             >
-              <ScrollView
-                horizontal={true}
-                contentContainerStyle={{
-                  display: "flex",
-                  paddingRight: 10,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Pressable onPress={selectAllItems}>
-                  <Text
-                    style={[
-                      globalStyles.edit_options_pills,
-                      {
-                        color: "black",
-                        marginRight: 10,
-                        backgroundColor: "silver",
-                      },
-                    ]}
-                  >
-                    SELECT ALL
-                  </Text>
+              <Ionicons name="close" size={30} color={"silver"} />
+            </TouchableOpacity>
+            <Text
+              style={{
+                fontSize: 20,
+                color: "white",
+                fontWeight: "normal",
+                textAlign: "center",
+              }}
+            >
+              {screenMode.selectedItemsID.length} Selected
+            </Text>
+          </View>
+          <View
+            style={{
+              minHeight: 30,
+            }}
+          >
+            <ScrollView
+              horizontal={true}
+              contentContainerStyle={{
+                display: "flex",
+                paddingRight: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Pressable onPress={selectAllItems}>
+                <Text
+                  style={[
+                    globalStyles.edit_options_pills,
+                    {
+                      color: "black",
+                      marginRight: 10,
+                      backgroundColor: "silver",
+                    },
+                  ]}
+                >
+                  SELECT ALL
+                </Text>
+              </Pressable>
+              {activeTab === "TRASH" && (
+                <Pressable
+                  style={{
+                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                  }}
+                  onPress={() => {
+                    Alert.alert(
+                      "Delete Tasks From Trash?",
+                      "The selected tasks will be deleted from the trash.",
+                      [
+                        {
+                          text: "No",
+                          onPress: () => {
+                            return false;
+                          },
+                          style: "cancel",
+                        },
+                        {
+                          text: "Yes",
+                          onPress: async () => {
+                            await deleteSelectedItemsFromTrash(
+                              screenMode.selectedItemsID,
+                              activeTab
+                            );
+                            _getToDoItems();
+                            setModalVisible(false);
+                            setScreenMode((prevScreenMode) => ({
+                              ...prevScreenMode,
+                              selectedItemsID: [],
+                            }));
+                            handleScreenMode("");
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        globalStyles.edit_options_pills,
+                        {
+                          backgroundColor: "red",
+                          opacity: pressed ? 0.5 : 1,
+                        },
+                      ]}
+                    >
+                      DELETE PERMANENTLY
+                    </Text>
+                  )}
                 </Pressable>
-                {activeTab === "TRASH" && (
-                  <Pressable
-                    style={{
-                      opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
-                    }}
-                    onPress={() => {
+              )}
+              {activeTab !== "PENDING" && (
+                <Pressable
+                  style={{
+                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                  }}
+                  onPress={() => {
+                    if (screenMode.selectedItemsID.length > 0) {
                       Alert.alert(
-                        "Delete Tasks From Trash?",
-                        "The selected tasks will be deleted from the trash.",
+                        "Set Tasks As Pending",
+                        "Set the selected tasks as pending?",
                         [
                           {
                             text: "No",
@@ -1141,176 +1194,122 @@ export const HomePage = () => {
                             style: "cancel",
                           },
                           {
-                            text: "Yes",
-                            onPress: async () => {
-                              await deleteSelectedItemsFromTrash(
-                                screenMode.selectedItemsID,
-                                activeTab
-                              );
-                              _getToDoItems();
-                              setModalVisible(false);
-                              setScreenMode((prevScreenMode) => ({
-                                ...prevScreenMode,
-                                selectedItemsID: [],
-                              }));
-                              handleScreenMode("");
+                            text: "YES",
+                            onPress: () => {
+                              _editSelectedItems("PENDING");
                             },
                           },
                         ]
                       );
-                    }}
-                  >
-                    {({ pressed }) => (
-                      <Text
-                        style={[
-                          globalStyles.edit_options_pills,
+                    }
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        globalStyles.edit_options_pills,
+                        {
+                          opacity: pressed ? 0.5 : 1,
+                          backgroundColor: "#ff7c00",
+                        },
+                      ]}
+                    >
+                      SET AS PENDING
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+              {activeTab !== "COMPLETED" && (
+                <Pressable
+                  style={{
+                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                  }}
+                  onPress={() => {
+                    if (screenMode.selectedItemsID.length > 0) {
+                      Alert.alert(
+                        "Set Tasks As Completed",
+                        "Set the selected tasks as completed?",
+                        [
                           {
-                            backgroundColor: "red",
-                            opacity: pressed ? 0.5 : 1,
+                            text: "No",
+                            onPress: () => {
+                              return false;
+                            },
+                            style: "cancel",
                           },
-                        ]}
-                      >
-                        DELETE PERMANENTLY
-                      </Text>
-                    )}
-                  </Pressable>
-                )}
-                {activeTab !== "PENDING" && (
-                  <Pressable
-                    style={{
-                      opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
-                    }}
-                    onPress={() => {
-                      if (screenMode.selectedItemsID.length > 0) {
-                        Alert.alert(
-                          "Set Tasks As Pending",
-                          "Set the selected tasks as pending?",
-                          [
-                            {
-                              text: "No",
-                              onPress: () => {
-                                return false;
-                              },
-                              style: "cancel",
-                            },
-                            {
-                              text: "YES",
-                              onPress: () => {
-                                _editSelectedItems("PENDING");
-                              },
-                            },
-                          ]
-                        );
-                      }
-                    }}
-                  >
-                    {({ pressed }) => (
-                      <Text
-                        style={[
-                          globalStyles.edit_options_pills,
                           {
-                            opacity: pressed ? 0.5 : 1,
-                            backgroundColor: "#ff7c00",
+                            text: "YES",
+                            onPress: () => {
+                              _editSelectedItems("COMPLETED");
+                            },
                           },
-                        ]}
-                      >
-                        SET AS PENDING
-                      </Text>
-                    )}
-                  </Pressable>
-                )}
-                {activeTab !== "COMPLETED" && (
-                  <Pressable
-                    style={{
-                      opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
-                    }}
-                    onPress={() => {
-                      if (screenMode.selectedItemsID.length > 0) {
-                        Alert.alert(
-                          "Set Tasks As Completed",
-                          "Set the selected tasks as completed?",
-                          [
-                            {
-                              text: "No",
-                              onPress: () => {
-                                return false;
-                              },
-                              style: "cancel",
-                            },
-                            {
-                              text: "YES",
-                              onPress: () => {
-                                _editSelectedItems("COMPLETED");
-                              },
-                            },
-                          ]
-                        );
-                      }
-                    }}
-                  >
-                    {({ pressed }) => (
-                      <Text
-                        style={[
-                          globalStyles.edit_options_pills,
+                        ]
+                      );
+                    }
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        globalStyles.edit_options_pills,
+                        {
+                          opacity: pressed ? 0.5 : 1,
+                          backgroundColor: "#069900",
+                        },
+                      ]}
+                    >
+                      SET AS COMPLETED
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+              {activeTab !== "TRASH" && (
+                <Pressable
+                  style={{
+                    opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
+                  }}
+                  onPress={() => {
+                    if (screenMode.selectedItemsID.length > 0) {
+                      Alert.alert(
+                        "Move To Trash Bin",
+                        "Are you sure you want to move the selected tasks to the trash bin?",
+                        [
                           {
-                            opacity: pressed ? 0.5 : 1,
-                            backgroundColor: "#069900",
+                            text: "No",
+                            onPress: () => {
+                              return false;
+                            },
+                            style: "cancel",
                           },
-                        ]}
-                      >
-                        SET AS COMPLETED
-                      </Text>
-                    )}
-                  </Pressable>
-                )}
-                {activeTab !== "TRASH" && (
-                  <Pressable
-                    style={{
-                      opacity: screenMode.selectedItemsID.length > 0 ? 1 : 0.4,
-                    }}
-                    onPress={() => {
-                      if (screenMode.selectedItemsID.length > 0) {
-                        Alert.alert(
-                          "Move To Trash Bin",
-                          "Are you sure you want to move the selected tasks to the trash bin?",
-                          [
-                            {
-                              text: "No",
-                              onPress: () => {
-                                return false;
-                              },
-                              style: "cancel",
-                            },
-                            {
-                              text: "YES",
-                              onPress: () => {
-                                _editSelectedItems("TRASH");
-                              },
-                            },
-                          ]
-                        );
-                      }
-                    }}
-                  >
-                    {({ pressed }) => (
-                      <Text
-                        style={[
-                          globalStyles.edit_options_pills,
                           {
-                            opacity: pressed ? 0.5 : 1,
-                            backgroundColor: "#D70000",
+                            text: "YES",
+                            onPress: () => {
+                              _editSelectedItems("TRASH");
+                            },
                           },
-                        ]}
-                      >
-                        MOVE TO TRASH
-                      </Text>
-                    )}
-                  </Pressable>
-                )}
-              </ScrollView>
-            </View>
+                        ]
+                      );
+                    }
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Text
+                      style={[
+                        globalStyles.edit_options_pills,
+                        {
+                          opacity: pressed ? 0.5 : 1,
+                          backgroundColor: "#D70000",
+                        },
+                      ]}
+                    >
+                      MOVE TO TRASH
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+            </ScrollView>
           </View>
-        </>
+        </View>
       )}
 
       {/* TABS */}

@@ -29,13 +29,21 @@ export const globalStyles = StyleSheet.create({
     maxHeight: windowHeight * 0.1,
     justifyContent: "flex-start",
   },
+  homePage_top_parent_3: {
+    display: "flex",
+    width: windowWidth,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    justifyContent: "flex-end",
+  },
   homePage_top_header_1: {
     fontSize: 10,
     color: "white",
     fontWeight: "bold",
   },
   homePage_items_scrollView_1: {
-    paddingTop: 15,
+    // paddingTop: 15,
     width: windowWidth,
     backgroundColor: "white",
     maxHeight: windowHeight * 1,
