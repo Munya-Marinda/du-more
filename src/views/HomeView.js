@@ -26,6 +26,7 @@ import { SingleToDoItem } from "../components/SingleToDoItem/SingleToDoItem";
 import {
   DEV_ADDTODOITEMS,
   DEV_DELETETODOITEMS,
+  asyncKeys,
   deleteSelectedItemsFromTrash,
   editSelectedItems,
   getToDoItems,
@@ -63,7 +64,7 @@ export const HomePage = () => {
   const [searchedItems, setSearchedItems] = useState([]);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
-  const [devMode, setDevMode] = useState(true);
+  const [devMode, setDevMode] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   //
   const [itemsSortedByDate, setItemsSortedByDate] = useState({});
@@ -80,6 +81,12 @@ export const HomePage = () => {
 
     const backAction = () => {
       setActiveTab("PENDING");
+
+      handleScreenMode("");
+      setScreenMode((prevScreenMode) => ({
+        ...prevScreenMode,
+        selectedItemsID: [],
+      }));
 
       // if (activeTab === "PENDING") {
       //   Alert.alert("Exit App", "Do you want to exit the app?", [
@@ -917,7 +924,7 @@ export const HomePage = () => {
                           item={item}
                           key={index}
                           index={index}
-                          asyncKey={"completedItems"}
+                          asyncKey={asyncKeys[item?.status?.toUpperCase()]}
                           _getToDoItems={_getToDoItems}
                           screenMode={screenMode}
                         />
@@ -1062,7 +1069,6 @@ export const HomePage = () => {
               </View>
             </View>
           )}
-          
         </>
       ) : (
         <View

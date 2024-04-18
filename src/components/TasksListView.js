@@ -51,10 +51,12 @@ export const TasksListView = ({
             top: 10,
             right: 10,
             zIndex: 999,
+            paddingLeft: 10,
+            paddingRight: 10,
             position: "absolute",
           }}
         >
-          <Ionicons size={30} color="gray" name={"checkmark-circle-sharp"} />
+          <Ionicons size={30} color="gray" name={"checkmark-circle-outline"} />
         </Pressable>
       )}
       <ToDoItemsByDate

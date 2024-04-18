@@ -176,9 +176,6 @@ const TodaysFocus = ({
                           >
                             {item?.note ? item?.note : "no note"}
                           </Text>
-                          {/* <Text style={globalStyles.item_date_text_2}>
-                             {item?.date ? formatDate(item?.date) : "no date"}
-                            </Text> */}
                         </View>
                       </View>
                     </View>

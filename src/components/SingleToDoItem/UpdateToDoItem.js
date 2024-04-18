@@ -70,6 +70,7 @@ export default function UpdateToDoItem({
           <>
             {/* TASK TITLE */}
             <Text
+              numberOfLines={3}
               style={{
                 fontSize: 20,
                 marginBottom: 5,
